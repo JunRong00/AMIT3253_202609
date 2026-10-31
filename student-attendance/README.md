@@ -72,6 +72,25 @@ check-in with code **`DEMO42`**, so you can log in as the student and check in s
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
 local demo** — they're well-known credentials once this code is shared. There is **no public registration**: an admin creates every student, lecturer and admin account from **Users → Add User**.
 
+## Ideas for additional functions
+
+The functions above are already provided. If you want to build something new on top of
+them, here are some ideas to start from. Each one adds new behaviour that reads and writes
+the database, and can be built with the same query and page patterns used elsewhere in this
+app. You are welcome to come up with your own instead.
+
+| Idea | Effort | What it involves |
+|---|---|---|
+| **Attendance percentage** | Easy | On `my_attendance.php`, show each course's attendance % (Present + Late ÷ sessions so far) and highlight courses below 80%. Reads `attendance`, `class_sessions`, `enrolments`. |
+| **Lecturer attendance report** | Easy | A page for lecturers listing every enrolled student's attendance % for one course, with a low-attendance warning list. |
+| **Manual mark by lecturer** | Easy | Let a lecturer mark a student Present/Late from `session_view.php` (e.g. a student whose phone died). Insert into `attendance`, checking the student is enrolled. |
+| **Absence with valid reason (MC)** | Moderate | Students submit a reason (and optionally a medical certificate photo, uploaded with the existing `handle_image_upload()` helper) for an Absent session; the lecturer approves it and it shows as **Excused**. New `absence_requests` table. |
+| **Edit user** | Easy | An `admin/user_edit.php` page so an admin can correct a student's name, Student ID or faculty without deleting the account. |
+| **Bulk-create students from CSV** | Moderate | Upload a CSV (name, email, Student ID, faculty, course codes) to create many student accounts and enrolments at once. |
+
+Document any function you add in your report: what it does, before/after screenshots, and the
+tables or columns it uses.
+
 ## Tech stack
 
 Plain procedural PHP (no framework) + MySQL via `mysqli`. All queries use prepared

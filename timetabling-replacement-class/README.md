@@ -58,6 +58,25 @@ Seeded by `schema.sql`:
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
 local demo** — they're well-known credentials once this code is shared. Students register their own accounts; lecturer accounts are created by an admin from **Users → Add Admin / Lecturer**.
 
+## Ideas for additional functions
+
+The functions above are already provided. If you want to build something new on top of
+them, here are some ideas to start from. Each one adds new behaviour that reads and writes
+the database, and can be built with the same query and page patterns used elsewhere in this
+app. You are welcome to come up with your own instead.
+
+| Idea | Effort | What it involves |
+|---|---|---|
+| **My timetable** | Moderate | Let students be enrolled in courses (new `enrolments` table, managed by the admin) and show a personal weekly timetable with only their classes. |
+| **Lecturer clash check** | Easy | When a lecturer requests a replacement, also reject it if they already teach another class in the same date and slot. Extends `replacement_error()` in `helpers.php`. |
+| **Cancel a class without replacement** | Easy | Let a lecturer cancel a single class (date + reason); show it struck through on the timetable. New `cancelled_classes` table. |
+| **Venue capacity check** | Easy | Add an expected class size to courses and grey out venues whose `capacity` is too small. |
+| **Printable / CSV timetable** | Easy | A button on `timetable.php` that downloads the week's classes as a CSV file. |
+| **Admin dashboard** | Easy | An `admin/index.php` with counts: pending requests, approved this week, busiest venue. |
+
+Document any function you add in your report: what it does, before/after screenshots, and the
+tables or columns it uses.
+
 ## Tech stack
 
 Plain procedural PHP (no framework) + MySQL via `mysqli`. All queries use prepared

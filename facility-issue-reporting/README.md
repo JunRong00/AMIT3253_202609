@@ -48,6 +48,25 @@ Seeded by `schema.sql`:
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
 local demo** — they're well-known credentials once this code is shared. Students register their own accounts via the Register page.
 
+## Ideas for additional functions
+
+The functions above are already provided. If you want to build something new on top of
+them, here are some ideas to start from. Each one adds new behaviour that reads and writes
+the database, and can be built with the same query and page patterns used elsewhere in this
+app. You are welcome to come up with your own instead.
+
+| Idea | Effort | What it involves |
+|---|---|---|
+| **Photo on a report** | Easy | Let reporters attach a photo of the problem. Reuse `handle_image_upload()` and add an `image_url` column to `issues` — stored on S3 when configured. |
+| **"Me too" on an existing issue** | Easy | Instead of only blocking a duplicate report, let users add their support to the existing issue. New `issue_supporters` table; show the count on the Issue Board. |
+| **Update history** | Easy | Record every status change and note in an `issue_updates` table and show a timeline on each report. |
+| **Rate the repair** | Easy | Once an issue is Resolved, the reporter rates the repair (1-5 stars) and leaves a comment. |
+| **Technician assignment** | Moderate | A `technicians` table managed by the admin; assign each issue to a technician and filter the admin list by technician. |
+| **Admin dashboard** | Easy | An `admin/index.php` with issues per category and location, and average time from Open to Resolved. |
+
+Document any function you add in your report: what it does, before/after screenshots, and the
+tables or columns it uses.
+
 ## Tech stack
 
 Plain procedural PHP (no framework) + MySQL via `mysqli`. All queries use prepared

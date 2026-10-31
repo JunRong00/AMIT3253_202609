@@ -49,6 +49,25 @@ Seeded by `schema.sql`:
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
 local demo** — they're well-known credentials once this code is shared. Students register their own accounts via the Register page.
 
+## Ideas for additional functions
+
+The functions above are already provided. If you want to build something new on top of
+them, here are some ideas to start from. Each one adds new behaviour that reads and writes
+the database, and can be built with the same query and page patterns used elsewhere in this
+app. You are welcome to come up with your own instead.
+
+| Idea | Effort | What it involves |
+|---|---|---|
+| **CV upload** | Easy | Let applicants attach a CV image/PDF to their application. Reuse `handle_image_upload()` (extend it to accept PDF) — stored on S3 when configured. |
+| **Save / bookmark openings** | Easy | A ★ Save button on each opening and a "Saved Openings" list. New `saved_openings` table. |
+| **Closing soon** | Easy | A "Closing within 3 days" section on the homepage for openings you haven't applied to yet. |
+| **Interview scheduling** | Moderate | When an application is Shortlisted, the admin sets an interview date/time/venue that the applicant sees on their homepage. |
+| **Application notes from admin** | Easy | Add an `admin_note` to applications (like the other apps' status notes) shown to the applicant. |
+| **Admin dashboard** | Easy | An `admin/index.php` with applications per category and per status, and the most popular openings. |
+
+Document any function you add in your report: what it does, before/after screenshots, and the
+tables or columns it uses.
+
 ## Tech stack
 
 Plain procedural PHP (no framework) + MySQL via `mysqli`. All queries use prepared

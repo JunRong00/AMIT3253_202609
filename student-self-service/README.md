@@ -51,6 +51,25 @@ Seeded by `schema.sql`:
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
 local demo** — they're well-known credentials once this code is shared. Students register their own accounts via the Register page.
 
+## Ideas for additional functions
+
+The functions above are already provided. If you want to build something new on top of
+them, here are some ideas to start from. Each one adds new behaviour that reads and writes
+the database, and can be built with the same query and page patterns used elsewhere in this
+app. You are welcome to come up with your own instead.
+
+| Idea | Effort | What it involves |
+|---|---|---|
+| **GPA and CGPA** | Easy | On `results.php`, calculate each semester's GPA (Σ grade point × credit hours ÷ Σ credit hours) and an overall CGPA. |
+| **Fee statement** | Moderate | A `fees` table (item, amount, due date, paid) entered by the admin, and a page where students see what they owe and have paid. |
+| **Supporting document upload** | Easy | Let students attach a file (e.g. an IC copy) to a document request using the existing `handle_image_upload()` helper (stored on S3 when configured). |
+| **Request status history** | Easy | Record every status change in a `request_history` table and show a timeline on the student's request. |
+| **Announcements** | Easy | Admin posts announcements (title, message, date) shown on the homepage. New `announcements` table. |
+| **Admin dashboard** | Easy | An `admin/index.php` with counts of pending, processing and ready requests, and requests per document type. |
+
+Document any function you add in your report: what it does, before/after screenshots, and the
+tables or columns it uses.
+
 ## Tech stack
 
 Plain procedural PHP (no framework) + MySQL via `mysqli`. All queries use prepared
