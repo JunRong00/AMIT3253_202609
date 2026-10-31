@@ -8,9 +8,10 @@ $uid = current_user_id();
 
 // Every session so far (today included) for the courses this student is
 // enrolled in, with their check-in if any. A past session with no check-in
-// counts as Absent; today's session still open is "Pending".
+// counts as Absent; today's session that hasn't ended (or is still open for
+// check-in) is "Pending".
 $stmt = $conn->prepare('
-    SELECT s.session_date, s.start_time, s.end_time, s.class_type, s.venue, s.is_open,
+    SELECT s.session_date, s.start_time, s.end_time, s.class_type, s.venue, s.open_until,
            c.code, c.name AS course_name, a.status, a.checked_in_at
     FROM class_sessions s
     JOIN courses c ON c.id = s.course_id
@@ -27,7 +28,7 @@ $stmt->close();
 foreach ($rows as &$row) {
     if ($row['status'] === null) {
         $isToday = $row['session_date'] === date('Y-m-d');
-        $row['status'] = $isToday && ($row['is_open'] || $row['end_time'] > date('H:i:s')) ? 'Pending' : 'Absent';
+        $row['status'] = $isToday && (session_is_open($row) || $row['end_time'] > date('H:i:s')) ? 'Pending' : 'Absent';
     }
 }
 unset($row);

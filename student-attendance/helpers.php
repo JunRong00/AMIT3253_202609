@@ -346,6 +346,19 @@ function class_types() {
 // start time is recorded as Late instead of Present.
 const LATE_AFTER_MINUTES = 15;
 
+// Reopening check-in after a class has ended keeps it open this long.
+const REOPEN_MINUTES = 15;
+
+// Check-in closes by itself at open_until (normally the session's end time),
+// so there's no flag to forget to switch off.
+function session_is_open($session) {
+    return !empty($session['open_until']) && strtotime($session['open_until']) > time();
+}
+
+function session_end_timestamp($session) {
+    return strtotime($session['session_date'] . ' ' . $session['end_time']);
+}
+
 // Six characters, no look-alikes (0/O, 1/I/L), so a code read off a
 // projector screen is hard to mistype.
 function generate_check_in_code() {

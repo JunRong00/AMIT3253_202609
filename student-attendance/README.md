@@ -9,9 +9,11 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 **Students**
 - Enrol/unenrol in courses on the **Courses** page.
 - **Check in** by entering the six-character code shown in class (homepage or `checkin.php`).
-  Check-in only works while the lecturer has the session open, on the day of the session, for
+  Check-in only works while the session is open for check-in, on the day of the session, for
   courses the student is enrolled in. Checking in more than 15 minutes after the start time is
   recorded as **Late**.
+- **Check-in closes automatically when the class ends** (`class_sessions.open_until`), so a code
+  shared after class is useless. Only the lecturer can reopen it.
 - **Concurrency-safe and idempotent**: the session row is locked (`SELECT ... FOR UPDATE`)
   while checking it's still open, and a unique key on (session, student) means a double
   submit can never create two records — the second attempt just reports "already checked in".
@@ -27,8 +29,11 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 - Schedule, edit and delete sessions (date, start/end time, venue, class type). A session
   students have already checked in to can't be deleted.
 - **Open check-in** on the day of the session: a fresh six-character code is generated each
-  time (no look-alike characters such as 0/O or 1/I), shown large for projecting. Close it when
-  done.
+  time (no look-alike characters such as 0/O or 1/I), shown large for projecting. It stays open
+  until the session's end time and then closes by itself; the lecturer can also close it early.
+- **Reopen after class**: once a class has ended, the lecturer can reopen check-in for 15
+  minutes (`REOPEN_MINUTES` in `helpers.php`) with a fresh code, e.g. for a student who had
+  trouble checking in.
 - **Live roster**: `session_view.php` polls **`session_status.php`** every 5 seconds, so
   students appear as they check in, plus a list of enrolled students not yet checked in.
 
@@ -53,6 +58,9 @@ Seeded by `schema.sql`:
 | `admin@example.com` | `admin123` | Admin (lands on the admin panel) |
 | `lecturer@example.com` | `lecturer123` | Lecturer |
 | `student@example.com` | `student123` | Student |
+
+Today's **AMIT3253 Cloud Computing for Business** lecture is seeded as already open for
+check-in with code **`DEMO42`**, so you can log in as the student and check in straight away.
 
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
 local demo** — they're well-known credentials once this code is shared. Students register their own accounts; lecturer accounts are created by an admin from **Users → Add Admin / Lecturer**.

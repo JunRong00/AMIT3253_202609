@@ -29,7 +29,7 @@ phone, and their attendance is recorded instantly &mdash; Present, or Late if th
 <div class="card">
 <div class="card-icon">&#128273;</div>
 <h3>2. Lecturer Opens Check-In</h3>
-<p>A fresh six-character code is generated for each class.</p>
+<p>A fresh six-character code is generated for each class, valid until the class ends.</p>
 </div>
 <div class="card">
 <div class="card-icon">&#9989;</div>

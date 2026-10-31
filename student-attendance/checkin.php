@@ -21,10 +21,12 @@ if (current_user_is_lecturer()) {
         // Lock the session row so a lecturer closing check-in at the same
         // moment can't race a student's check-in.
         $stmt = $conn->prepare('
-            SELECT s.id, s.course_id, s.start_time, c.code, c.name AS course_name
+            SELECT s.id, s.course_id, s.start_time, s.open_until, c.code, c.name AS course_name
             FROM class_sessions s
             JOIN courses c ON c.id = s.course_id
-            WHERE s.check_in_code = ? AND s.is_open = 1 AND s.session_date = CURDATE()
+            WHERE s.check_in_code = ? AND s.session_date = CURDATE()
+            ORDER BY s.open_until DESC
+            LIMIT 1
             FOR UPDATE
         ');
         $stmt->bind_param('s', $code);
@@ -33,7 +35,12 @@ if (current_user_is_lecturer()) {
         $stmt->close();
 
         if (!$session) {
-            $error = 'That code doesn\'t match any class open for check-in right now. Check the code, or ask your lecturer to open check-in.';
+            $error = 'That code doesn\'t match any class today. Check the code with your lecturer.';
+            $conn->rollback();
+        } elseif (!session_is_open($session)) {
+            // Check-in closes automatically when the class ends; only the
+            // lecturer can reopen it.
+            $error = 'Check-in for ' . $session['code'] . ' ' . $session['course_name'] . ' has closed. Ask your lecturer to reopen it if you were in class.';
             $conn->rollback();
         } else {
             $courseId = (int)$session['course_id'];

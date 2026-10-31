@@ -114,7 +114,7 @@ require 'partials/header.php';
 <td><?= htmlspecialchars($s['class_type']) ?></td>
 <td><?= htmlspecialchars($s['venue']) ?></td>
 <td><?= (int)$s['checked_in'] ?> / <?= (int)$s['enrolled'] ?></td>
-<td><?= $s['is_open'] ? '<span class="badge badge-success">Open</span>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
+<td><?= session_is_open($s) ? '<span class="badge badge-success">Open</span>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
 <td><a class="btn btn-small" href="session_view.php?id=<?= (int)$s['id'] ?>">Manage</a></td>
 </tr>
 <?php endforeach; ?>
@@ -174,7 +174,7 @@ require 'partials/header.php';
 <td><strong><?= htmlspecialchars($s['code']) ?></strong> <?= htmlspecialchars($s['course_name']) ?></td>
 <td><?= htmlspecialchars($s['class_type']) ?></td>
 <td><?= htmlspecialchars($s['venue']) ?></td>
-<td><?= $s['is_open'] ? '<span class="badge badge-success">Open now</span>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
+<td><?= session_is_open($s) ? '<span class="badge badge-success">Open now</span>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
 <td><?= $s['my_status'] ? '<span class="badge ' . attendance_badge_class($s['my_status']) . '">' . htmlspecialchars($s['my_status']) . '</span>' : '<span class="stat-label">Not checked in</span>' ?></td>
 </tr>
 <?php endforeach; ?>

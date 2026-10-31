@@ -60,7 +60,7 @@ require 'partials/header.php';
 <td><?= htmlspecialchars($s['lecturer_name'] ?? '-') ?></td>
 <td><?= htmlspecialchars($s['venue']) ?></td>
 <td><?= (int)$s['checked_in'] ?> / <?= (int)$s['enrolled'] ?></td>
-<td><?= $s['is_open'] ? '<span class="badge badge-success">Open</span> <code>' . htmlspecialchars($s['check_in_code']) . '</code>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
+<td><?= session_is_open($s) ? '<span class="badge badge-success">Open</span> <code>' . htmlspecialchars($s['check_in_code']) . '</code>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
 <td>
 <a class="btn btn-secondary btn-small" href="session_view.php?id=<?= (int)$s['id'] ?>">Attendance</a>
 <form action="session_delete.php" method="post" style="display:inline" onsubmit="return confirm('Delete this session AND all <?= (int)$s['checked_in'] ?> attendance record(s) for it? This cannot be undone.');">

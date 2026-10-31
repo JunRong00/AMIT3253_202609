@@ -55,8 +55,10 @@ require 'partials/header.php';
 <div class="card-grid">
 <div class="card">
 <h3>Check-In</h3>
-<?php if ($session['is_open']): ?>
-<p><span class="badge badge-success">Open</span> Show this code to the class:</p>
+<?php if (session_is_open($session)): ?>
+<p><span class="badge badge-success">Open</span>
+<?= strtotime($session['open_until']) > session_end_timestamp($session) ? 'Reopened' : 'Open' ?> until
+<strong><?= htmlspecialchars(date('g:i a', strtotime($session['open_until']))) ?></strong>, then closes automatically. Show this code to the class:</p>
 <div class="code-display"><?= htmlspecialchars($session['check_in_code']) ?></div>
 <form action="session_toggle.php" method="post">
 <input type="hidden" name="id" value="<?= (int)$session['id'] ?>">
@@ -64,11 +66,19 @@ require 'partials/header.php';
 </form>
 <?php else: ?>
 <p><span class="badge badge-neutral">Closed</span></p>
-<?php if ($isToday): ?>
-<p>Opening check-in generates a fresh six-character code for this class.</p>
+<?php if ($isToday && session_end_timestamp($session) > time()): ?>
+<p>Opening check-in generates a fresh six-character code. It closes automatically at
+<?= htmlspecialchars(date('g:i a', session_end_timestamp($session))) ?>, when the class ends.</p>
 <form action="session_toggle.php" method="post">
 <input type="hidden" name="id" value="<?= (int)$session['id'] ?>">
 <button type="submit">Open Check-In</button>
+</form>
+<?php elseif ($isToday): ?>
+<p>This class has ended. You can reopen check-in for <?= REOPEN_MINUTES ?> minutes with a fresh code,
+e.g. for a student who had trouble checking in.</p>
+<form action="session_toggle.php" method="post">
+<input type="hidden" name="id" value="<?= (int)$session['id'] ?>">
+<button type="submit">Reopen for <?= REOPEN_MINUTES ?> Minutes</button>
 </form>
 <?php else: ?>
 <p>Check-in can be opened on the day of the session.</p>

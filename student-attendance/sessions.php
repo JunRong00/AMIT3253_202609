@@ -76,7 +76,7 @@ require 'partials/header.php';
 <td><?= htmlspecialchars($s['class_type']) ?></td>
 <td><?= htmlspecialchars($s['venue']) ?></td>
 <td><?= (int)$s['checked_in'] ?> / <?= (int)$s['enrolled'] ?></td>
-<td><?= $s['is_open'] ? '<span class="badge badge-success">Open</span>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
+<td><?= session_is_open($s) ? '<span class="badge badge-success">Open</span>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
 <td>
 <a class="btn btn-small" href="session_view.php?id=<?= (int)$s['id'] ?>">Manage</a>
 <a class="btn btn-secondary btn-small" href="session_edit.php?id=<?= (int)$s['id'] ?>">Edit</a>

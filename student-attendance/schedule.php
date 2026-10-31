@@ -53,7 +53,7 @@ require 'partials/header.php';
 <td><?= htmlspecialchars($s['class_type']) ?></td>
 <td><?= htmlspecialchars($s['venue']) ?></td>
 <td><?= htmlspecialchars($s['lecturer_name'] ?? '-') ?></td>
-<td><?= $s['is_open'] ? '<span class="badge badge-success">Open now</span>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
+<td><?= session_is_open($s) ? '<span class="badge badge-success">Open now</span>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
 </tr>
 <?php endforeach; ?>
 </table>

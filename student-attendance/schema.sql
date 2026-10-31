@@ -60,21 +60,24 @@ CREATE TABLE class_sessions (
   venue VARCHAR(100) NOT NULL,
   class_type ENUM('Lecture', 'Tutorial', 'Practical') NOT NULL DEFAULT 'Lecture',
   check_in_code CHAR(6) NULL,
-  is_open TINYINT(1) NOT NULL DEFAULT 0,
+  -- Check-in is open while open_until is in the future. Opening it sets this
+  -- to the session's end time (or 15 minutes from now if reopened after the
+  -- class has ended); closing it sets it back to NULL.
+  open_until DATETIME NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_code (check_in_code),
   FOREIGN KEY (course_id) REFERENCES courses(id)
 );
 
 -- Dates are relative to the day the schema is imported. Session 3 is today
--- and already open for check-in with code DEMO42, so the check-in flow can be
--- tried straight away.
-INSERT INTO class_sessions (course_id, session_date, start_time, end_time, venue, class_type, check_in_code, is_open) VALUES
-(1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '10:00:00', '12:00:00', 'Lecture Hall DK A', 'Lecture', 'H4KP7T', 0),
-(2, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '14:00:00', '16:00:00', 'Computer Lab K301', 'Practical', 'Q8MN3R', 0),
-(1, CURDATE(), MAKETIME(HOUR(NOW()), 0, 0), ADDTIME(MAKETIME(HOUR(NOW()), 0, 0), '02:00:00'), 'Lecture Hall DK A', 'Lecture', 'DEMO42', 1),
-(2, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:00:00', '16:00:00', 'Computer Lab K301', 'Practical', NULL, 0),
-(1, DATE_ADD(CURDATE(), INTERVAL 7 DAY), '10:00:00', '12:00:00', 'Lecture Hall DK A', 'Lecture', NULL, 0);
+-- and already open for check-in (until its end time) with code DEMO42, so the
+-- check-in flow can be tried straight away.
+INSERT INTO class_sessions (course_id, session_date, start_time, end_time, venue, class_type, check_in_code, open_until) VALUES
+(1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), '10:00:00', '12:00:00', 'Lecture Hall DK A', 'Lecture', 'H4KP7T', NULL),
+(2, DATE_SUB(CURDATE(), INTERVAL 6 DAY), '14:00:00', '16:00:00', 'Computer Lab K301', 'Practical', 'Q8MN3R', NULL),
+(1, CURDATE(), MAKETIME(HOUR(NOW()), 0, 0), LEAST(ADDTIME(MAKETIME(HOUR(NOW()), 0, 0), '02:00:00'), '23:59:00'), 'Lecture Hall DK A', 'Lecture', 'DEMO42', TIMESTAMP(CURDATE(), LEAST(ADDTIME(MAKETIME(HOUR(NOW()), 0, 0), '02:00:00'), '23:59:00'))),
+(2, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:00:00', '16:00:00', 'Computer Lab K301', 'Practical', NULL, NULL),
+(1, DATE_ADD(CURDATE(), INTERVAL 7 DAY), '10:00:00', '12:00:00', 'Lecture Hall DK A', 'Lecture', NULL, NULL);
 
 CREATE TABLE attendance (
   id INT AUTO_INCREMENT PRIMARY KEY,
