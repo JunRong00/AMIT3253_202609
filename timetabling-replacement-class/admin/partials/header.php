@@ -24,6 +24,7 @@
 <a href="timetable.php" class="<?= $currentPage === 'timetable.php' ? 'active' : '' ?>">Timetable</a>
 <a href="courses.php" class="<?= $currentPage === 'courses.php' ? 'active' : '' ?>">Courses</a>
 <a href="venues.php" class="<?= $currentPage === 'venues.php' ? 'active' : '' ?>">Venues</a>
+<a href="holidays.php" class="<?= $currentPage === 'holidays.php' ? 'active' : '' ?>">Holidays</a>
 <a href="feedback.php" class="<?= $currentPage === 'feedback.php' ? 'active' : '' ?>">Feedback</a>
 <a href="messages.php" class="<?= $currentPage === 'messages.php' ? 'active' : '' ?>">Messages</a>
 <a href="users.php" class="<?= $currentPage === 'users.php' ? 'active' : '' ?>">Users</a>

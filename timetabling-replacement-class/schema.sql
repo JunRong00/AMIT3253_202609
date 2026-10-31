@@ -64,9 +64,12 @@ INSERT INTO time_slots (start_time, end_time) VALUES
 ('10:00:00', '12:00:00'),
 ('12:00:00', '14:00:00'),
 ('14:00:00', '16:00:00'),
-('16:00:00', '18:00:00');
+('16:00:00', '18:00:00'),
+('18:00:00', '20:00:00'),
+('20:00:00', '22:00:00');
 
--- The regular weekly timetable. day_of_week: 1 = Monday ... 5 = Friday.
+-- The regular weekly timetable. day_of_week: 1 = Monday ... 6 = Saturday
+-- (no classes on Sunday).
 -- A venue can only hold one class per day + slot.
 CREATE TABLE timetable_entries (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -89,7 +92,23 @@ INSERT INTO timetable_entries (course_id, day_of_week, time_slot_id, venue_id, c
 (2, 4, 4, 3, 'Practical'),
 (3, 1, 4, 2, 'Tutorial'),
 (3, 5, 2, 1, 'Lecture'),
-(4, 4, 1, 4, 'Lecture');
+(4, 4, 1, 4, 'Lecture'),
+(1, 3, 6, 3, 'Practical'),
+(2, 6, 1, 3, 'Practical');
+
+-- Public holidays: shown on the timetable, and replacement classes can't be
+-- booked on them. Regular classes that fall on one are flagged in red.
+CREATE TABLE public_holidays (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  holiday_date DATE NOT NULL UNIQUE,
+  name VARCHAR(100) NOT NULL
+);
+
+INSERT INTO public_holidays (holiday_date, name) VALUES
+('2026-08-31', 'Merdeka Day'),
+('2026-09-16', 'Malaysia Day'),
+('2026-11-08', 'Deepavali'),
+('2026-12-25', 'Christmas Day');
 
 CREATE TABLE replacement_classes (
   id INT AUTO_INCREMENT PRIMARY KEY,

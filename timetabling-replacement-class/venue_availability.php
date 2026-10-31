@@ -11,8 +11,11 @@ $slotId    = (int)($_GET['time_slot_id'] ?? 0);
 $excludeId = (int)($_GET['exclude_id'] ?? 0);
 
 if ($date === '' || !strtotime($date) || $slotId < 1) {
-    echo json_encode(['busy_venue_ids' => []]);
+    echo json_encode(['busy_venue_ids' => [], 'holiday' => null]);
     exit;
 }
 
-echo json_encode(['busy_venue_ids' => busy_venue_ids($conn, $date, $slotId, $excludeId)]);
+echo json_encode([
+    'busy_venue_ids' => busy_venue_ids($conn, $date, $slotId, $excludeId),
+    'holiday'        => public_holiday_name($conn, $date),
+]);

@@ -9,10 +9,12 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 **Public site**
 - Course cards with search on the homepage, and a **Courses** page listing every course's
   regular weekly classes (day, time slot, type, venue).
-- **`timetable.php`**: a weekly grid (time slots × Monday–Friday) for all courses or one
-  course, with previous/this/next week navigation. Approved replacement classes are shown in
-  green on their new date, and the regular class they replace is struck through, so students
-  know not to turn up.
+- **`timetable.php`**: a weekly timetable with days (Monday–Sunday, with dates) as rows and
+  hourly columns (8:00 am–10:00 pm), each class spanning its hours, for all courses or one
+  course, with previous/this/next week navigation. Classes are colour-coded: **green** normal,
+  **olive** replacement, **red** a class that falls on a public holiday, and greyed out/struck
+  through for a class that has been replaced. Hover over a class for its full name, lecturer
+  and venue. Public holidays are named under their date.
 - **`replacements.php`**: every approved replacement class from today onwards.
 - Register/login/logout, account page, dark/light mode, password visibility toggle, TAR UMT
   faculty dropdown at registration.
@@ -30,7 +32,7 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   the chosen date and slot (a fetch to **`venue_availability.php`**), and slots that have already
   started today are greyed out too. The server re-checks everything on submit.
 - The original date must be a day the course actually has a regular class; replacements must
-  be on a weekday and not in the past.
+  be Monday–Saturday, not on a public holiday, and not in the past.
 
 **Admin panel** (`admin/`, gated by `is_admin`; admins land on `admin/replacements.php`)
 - Approve/reject replacement requests with a note shown to the lecturer. Re-approving a
@@ -38,6 +40,7 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 - Manage the regular weekly timetable (`admin/timetable.php`) — a database unique key stops two
   classes being put in the same venue, day and slot.
 - Full CRUD for courses (with lecturer assignment) and venues (with photo upload).
+- Manage **public holidays** (`admin/holidays.php`), shown on the timetable.
 - Moderate feedback and view contact messages.
 - Manage user accounts: create **lecturer** or admin accounts, promote/demote admin access,
   delete an account (cascades to their replacement requests and feedback; courses they taught
@@ -113,7 +116,7 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 
 | Path | Purpose |
 |---|---|
-| `schema.sql` | Creates the database, all tables (`users`, `courses`, `venues`, `time_slots`, `timetable_entries`, `replacement_classes`, `feedback`, `contact_messages`, `sessions`) and seed data |
+| `schema.sql` | Creates the database, all tables (`users`, `courses`, `venues`, `time_slots`, `timetable_entries`, `public_holidays`, `replacement_classes`, `feedback`, `contact_messages`, `sessions`) and seed data |
 | `config.php` | Database connection — reads `DB_HOST`/`DB_USER`/`DB_PASS`/`DB_NAME` (environment or `.env`), plus S3 photo storage config |
 | `healthz.php` | ALB health check target — `200` if the DB connection works, `500` otherwise |
 | `auth.php` | Database-backed PHP sessions + helpers: `current_user_id()`, `require_login()`, `require_admin()`, `require_lecturer()` |

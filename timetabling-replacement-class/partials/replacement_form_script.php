@@ -40,8 +40,8 @@ $excludeReplacementId = $excludeReplacementId ?? 0;
         reset(venueSelect);
         hint.textContent = '';
 
-        if (day === 0 || day === 6) {
-            hint.textContent = 'Replacement classes can only be held on weekdays.';
+        if (day === 0) {
+            hint.textContent = 'Replacement classes can only be held from Monday to Saturday.';
             return;
         }
         if (date === today) {
@@ -63,7 +63,9 @@ $excludeReplacementId = $excludeReplacementId ?? 0;
                         markDisabled(venueSelect, opt, 'In use');
                     }
                 });
-                hint.textContent = 'Greyed-out venues are already in use at this time; greyed-out slots have already started today.';
+                hint.textContent = data.holiday
+                    ? 'This date is a public holiday (' + data.holiday + ') - please choose another date.'
+                    : 'Greyed-out venues are already in use at this time; greyed-out slots have already started today.';
             })
             .catch(function () { /* availability check is a convenience, not required to submit */ });
     }

@@ -342,10 +342,30 @@ function class_types() {
     return ['Lecture', 'Tutorial', 'Practical'];
 }
 
-// Teaching days only - MySQL's WEEKDAY() is 0 for Monday, so day_of_week in
-// timetable_entries is WEEKDAY() + 1.
+// Every day of the week, keyed the same way as timetable_entries.day_of_week
+// (1 = Monday ... 7 = Sunday, i.e. MySQL's WEEKDAY() + 1). The timetable
+// grid shows all seven.
 function weekdays() {
-    return [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday'];
+    return [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
+}
+
+// Days classes (regular or replacement) can be held on: Monday to Saturday.
+function teaching_days() {
+    return [1, 2, 3, 4, 5, 6];
+}
+
+// Name of the public holiday on $date, or null if it's a normal day.
+function public_holiday_name($conn, $date) {
+    $stmt = $conn->prepare('SELECT name FROM public_holidays WHERE holiday_date = ?');
+    $stmt->bind_param('s', $date);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $row['name'] ?? null;
+}
+
+function class_type_letter($type) {
+    return substr($type, 0, 1);
 }
 
 function day_of_week($date) {
@@ -411,11 +431,15 @@ function replacement_error($conn, $courseId, $originalDate, $replacementDate, $s
     if ($originalDate === '' || $replacementDate === '') {
         return 'Please choose both the original class date and the replacement date.';
     }
-    if (day_of_week($replacementDate) > 5) {
-        return 'Replacement classes can only be held on weekdays.';
+    if (!in_array(day_of_week($replacementDate), teaching_days(), true)) {
+        return 'Replacement classes can only be held from Monday to Saturday.';
     }
     if ($replacementDate < date('Y-m-d')) {
         return 'The replacement date cannot be in the past.';
+    }
+    $holiday = public_holiday_name($conn, $replacementDate);
+    if ($holiday !== null) {
+        return date('d M Y', strtotime($replacementDate)) . ' is a public holiday (' . $holiday . '). Please choose another date.';
     }
 
     $stmt = $conn->prepare('SELECT start_time FROM time_slots WHERE id = ?');

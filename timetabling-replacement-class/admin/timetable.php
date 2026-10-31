@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $venue_id     = (int)($_POST['venue_id'] ?? 0);
     $class_type   = $_POST['class_type'] ?? '';
 
-    if (!isset(weekdays()[$day_of_week]) || !in_array($class_type, class_types(), true)) {
+    if (!in_array($day_of_week, teaching_days(), true) || !in_array($class_type, class_types(), true)) {
         $error = 'Please choose a valid day and class type.';
     } else {
         // The uniq_venue_slot key rejects a second class in the same venue,
@@ -61,8 +61,8 @@ require 'partials/header.php';
 </label>
 <label>Day
 <select name="day_of_week" required>
-<?php foreach (weekdays() as $dow => $day): ?>
-<option value="<?= $dow ?>"><?= $day ?></option>
+<?php foreach (teaching_days() as $dow): ?>
+<option value="<?= $dow ?>"><?= weekdays()[$dow] ?></option>
 <?php endforeach; ?>
 </select>
 </label>
