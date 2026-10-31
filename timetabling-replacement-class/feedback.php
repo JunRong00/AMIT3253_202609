@@ -69,7 +69,7 @@ require 'partials/header.php';
 </form>
 </div>
 <?php else: ?>
-<p><a href="login.php">Login</a> or <a href="register.php">register</a> to leave feedback.</p>
+<p><a href="login.php">Login</a> to leave feedback.</p>
 <?php endif; ?>
 
 <?php if (empty($feedback)): ?>

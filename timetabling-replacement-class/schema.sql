@@ -17,8 +17,8 @@ CREATE TABLE users (
 -- Seed accounts (change these passwords in any real deployment):
 --   admin@example.com    / admin123     (admin)
 --   lecturer@example.com / lecturer123  (lecturer - teaches three of the seeded courses)
---   student@example.com  / student123   (student)
--- Students register themselves; lecturer accounts are created by an admin.
+--   student@example.com  / student123   (student - enrolled in two courses this semester)
+-- There is no public registration: an admin creates every account.
 INSERT INTO users (name, email, password_hash, id_number, faculty, date_of_birth, role, is_admin) VALUES
 ('Admin', 'admin@example.com', '$2y$10$HI3gLmyD4OGmfNLAGUIL8.eBhhKu5nzL7wTDws.6mUNO9V44kyM5q', NULL, NULL, NULL, 'student', 1),
 ('Dr. Demo Lecturer', 'lecturer@example.com', '$2y$10$fpapO3ZtveFhM52pbu9WneC3iXWBUo/hTiJAO4x0DOfcknwdrgGG2', 'S1001', 'Faculty of Computing and Information Technology', '1985-06-20', 'lecturer', 0),
@@ -68,33 +68,67 @@ INSERT INTO time_slots (start_time, end_time) VALUES
 ('18:00:00', '20:00:00'),
 ('20:00:00', '22:00:00');
 
--- The regular weekly timetable. day_of_week: 1 = Monday ... 6 = Saturday
--- (no classes on Sunday).
--- A venue can only hold one class per day + slot.
+-- A year has two long semesters (14 weeks) and one short semester (7 weeks).
+-- start_date is the Monday of week 1. The seeded semesters are relative to the
+-- day this schema is imported, so the demo is always mid-semester (week 6).
+CREATE TABLE semesters (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  code CHAR(6) NOT NULL UNIQUE,
+  name VARCHAR(100) NOT NULL,
+  start_date DATE NOT NULL,
+  weeks TINYINT NOT NULL
+);
+
+SET @sem_start = DATE_SUB(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 5 WEEK);
+INSERT INTO semesters (code, name, start_date, weeks) VALUES
+(DATE_FORMAT(@sem_start, '%Y%m'), 'Long Semester', @sem_start, 14),
+(DATE_FORMAT(DATE_ADD(@sem_start, INTERVAL 16 WEEK), '%Y%m'), 'Short Semester', DATE_ADD(@sem_start, INTERVAL 16 WEEK), 7);
+
+-- The regular weekly timetable for each semester. day_of_week: 1 = Monday
+-- ... 6 = Saturday (no classes on Sunday). Within a semester, a venue can
+-- only hold one class per day + slot.
 CREATE TABLE timetable_entries (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  semester_id INT NOT NULL,
   course_id INT NOT NULL,
   day_of_week TINYINT NOT NULL,
   time_slot_id INT NOT NULL,
   venue_id INT NOT NULL,
   class_type ENUM('Lecture', 'Tutorial', 'Practical') NOT NULL DEFAULT 'Lecture',
-  UNIQUE KEY uniq_venue_slot (day_of_week, time_slot_id, venue_id),
+  UNIQUE KEY uniq_venue_slot (semester_id, day_of_week, time_slot_id, venue_id),
+  FOREIGN KEY (semester_id) REFERENCES semesters(id),
   FOREIGN KEY (course_id) REFERENCES courses(id),
   FOREIGN KEY (time_slot_id) REFERENCES time_slots(id),
   FOREIGN KEY (venue_id) REFERENCES venues(id)
 );
 
-INSERT INTO timetable_entries (course_id, day_of_week, time_slot_id, venue_id, class_type) VALUES
-(1, 1, 2, 1, 'Lecture'),
-(1, 2, 4, 2, 'Tutorial'),
-(1, 3, 1, 3, 'Practical'),
-(2, 2, 2, 1, 'Lecture'),
-(2, 4, 4, 3, 'Practical'),
-(3, 1, 4, 2, 'Tutorial'),
-(3, 5, 2, 1, 'Lecture'),
-(4, 4, 1, 4, 'Lecture'),
-(1, 3, 6, 3, 'Practical'),
-(2, 6, 1, 3, 'Practical');
+INSERT INTO timetable_entries (semester_id, course_id, day_of_week, time_slot_id, venue_id, class_type) VALUES
+(1, 1, 1, 2, 1, 'Lecture'),
+(1, 1, 2, 4, 2, 'Tutorial'),
+(1, 1, 3, 1, 3, 'Practical'),
+(1, 2, 2, 2, 1, 'Lecture'),
+(1, 2, 4, 4, 3, 'Practical'),
+(1, 3, 1, 4, 2, 'Tutorial'),
+(1, 3, 5, 2, 1, 'Lecture'),
+(1, 4, 4, 1, 4, 'Lecture'),
+(1, 1, 3, 6, 3, 'Practical'),
+(1, 2, 6, 1, 3, 'Practical');
+
+-- Students only see the timetable for courses they're enrolled in, per
+-- semester. Enrolment is done by the admin.
+CREATE TABLE enrolments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  course_id INT NOT NULL,
+  semester_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_enrolment (user_id, course_id, semester_id),
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (course_id) REFERENCES courses(id),
+  FOREIGN KEY (semester_id) REFERENCES semesters(id)
+);
+
+INSERT INTO enrolments (user_id, course_id, semester_id) VALUES (3, 1, 1), (3, 2, 1);
 
 -- Public holidays: shown on the timetable, and replacement classes can't be
 -- booked on them. Regular classes that fall on one are flagged in red.

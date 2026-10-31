@@ -98,7 +98,7 @@ require 'partials/header.php';
 <section>
 <h2>My Reports</h2>
 <?php if (!current_user_id()): ?>
-<p><a href="login.php">Login</a> or <a href="register.php">register</a> to report issues and follow their status.</p>
+<p><a href="login.php">Login</a> with the account given to you by the Estate Management Office to report issues and follow their status.</p>
 <?php elseif (empty($myIssues)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128295;</div>

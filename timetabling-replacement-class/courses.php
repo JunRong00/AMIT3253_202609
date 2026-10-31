@@ -3,6 +3,9 @@ require 'config.php';
 require 'auth.php';
 require 'helpers.php';
 
+$semester = default_semester($conn);
+$semesterId = (int)($semester['id'] ?? 0);
+
 $courses = $conn->query('
     SELECT c.*, u.name AS lecturer_name
     FROM courses c LEFT JOIN users u ON u.id = c.lecturer_id
@@ -10,13 +13,18 @@ $courses = $conn->query('
 ')->fetch_all(MYSQLI_ASSOC);
 
 $entriesByCourse = [];
-$rows = $conn->query('
+$stmt = $conn->prepare('
     SELECT t.course_id, t.day_of_week, t.class_type, ts.start_time, ts.end_time, v.name AS venue_name
     FROM timetable_entries t
     JOIN time_slots ts ON ts.id = t.time_slot_id
     JOIN venues v ON v.id = t.venue_id
+    WHERE t.semester_id = ?
     ORDER BY t.day_of_week, ts.start_time
-')->fetch_all(MYSQLI_ASSOC);
+');
+$stmt->bind_param('i', $semesterId);
+$stmt->execute();
+$rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 foreach ($rows as $row) {
     $entriesByCourse[(int)$row['course_id']][] = $row;
 }
@@ -30,7 +38,7 @@ require 'partials/header.php';
 ?>
 <div class="page-header">
 <h1>Courses</h1>
-<p>Every course offered this semester, with its regular weekly classes.</p>
+<p>Every course, with its regular weekly classes for <?= $semester ? htmlspecialchars(semester_label($semester)) : 'the current semester' ?>.</p>
 </div>
 
 <section>

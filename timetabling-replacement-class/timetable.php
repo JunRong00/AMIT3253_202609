@@ -3,12 +3,34 @@ require 'config.php';
 require 'auth.php';
 require 'helpers.php';
 
-$courseId = (int)($_GET['course_id'] ?? 0);
-$week = $_GET['week'] ?? date('Y-m-d');
-if (!strtotime($week)) {
-    $week = date('Y-m-d');
+require_login();
+
+$semesters = $conn->query('SELECT * FROM semesters ORDER BY start_date')->fetch_all(MYSQLI_ASSOC);
+$semesterId = (int)($_GET['semester_id'] ?? 0);
+$semester = null;
+foreach ($semesters as $s) {
+    if ((int)$s['id'] === $semesterId) {
+        $semester = $s;
+    }
 }
-$monday = monday_of($week);
+$semester = $semester ?? default_semester($conn);
+
+if (!$semester) {
+    $pageTitle = 'Timetable';
+    require 'partials/header.php';
+    echo '<div class="empty-state"><div class="empty-state-icon">&#128197;</div><p>No semesters have been set up yet.</p></div>';
+    require 'partials/footer.php';
+    exit;
+}
+$semesterId = (int)$semester['id'];
+$totalWeeks = (int)$semester['weeks'];
+$today = date('Y-m-d');
+$todayInSemester = $today >= $semester['start_date'] && $today <= semester_end_date($semester);
+$weekParam = $_GET['week'] ?? '';
+$week = $weekParam === '' ? ($todayInSemester ? semester_week($semester, $today) : 1) : (int)$weekParam;
+$week = max(1, min($totalWeeks, $week));
+
+$monday = date('Y-m-d', strtotime($semester['start_date'] . ' +' . (($week - 1) * 7) . ' days'));
 $sunday = date('Y-m-d', strtotime($monday . ' +6 days'));
 
 $dates = [];
@@ -16,7 +38,21 @@ foreach (weekdays() as $dow => $dayName) {
     $dates[$dow] = date('Y-m-d', strtotime($monday . ' +' . ($dow - 1) . ' days'));
 }
 
+// Students see only their enrolled courses, lecturers the courses they
+// teach, admins everything.
+$visible = visible_course_ids($conn, $semesterId);
 $courses = $conn->query('SELECT id, code, name FROM courses ORDER BY code')->fetch_all(MYSQLI_ASSOC);
+if ($visible !== null) {
+    $courses = array_values(array_filter($courses, fn($c) => in_array((int)$c['id'], $visible, true)));
+}
+$courseId = (int)($_GET['course_id'] ?? 0);
+if ($courseId > 0 && $visible !== null && !in_array($courseId, $visible, true)) {
+    $courseId = 0;
+}
+$shownIds = $courseId > 0 ? [$courseId] : $visible;
+// Course IDs come from the database or are cast to int, so they're safe to
+// inline into the IN (...) list.
+$courseFilter = fn($column) => $shownIds === null ? '' : ' AND ' . $column . ' IN (' . (implode(',', array_map('intval', $shownIds)) ?: '0') . ')';
 
 // Hourly columns from the earliest slot start to the latest slot end.
 $range = $conn->query('SELECT MIN(start_time) AS first_start, MAX(end_time) AS last_end FROM time_slots')->fetch_assoc();
@@ -24,7 +60,7 @@ $firstHour = (int)substr($range['first_start'] ?? '08:00:00', 0, 2);
 $lastHour = (int)ceil(strtotime('1970-01-01 ' . ($range['last_end'] ?? '18:00:00') . ' UTC') / 3600);
 $hours = range($firstHour, max($firstHour, $lastHour - 1));
 
-$entrySql = '
+$stmt = $conn->prepare('
     SELECT t.course_id, t.day_of_week, t.class_type, c.code, c.name AS course_name, v.name AS venue_name, v.building,
            u.name AS lecturer_name, ts.start_time, ts.end_time
     FROM timetable_entries t
@@ -32,8 +68,13 @@ $entrySql = '
     JOIN venues v ON v.id = t.venue_id
     JOIN time_slots ts ON ts.id = t.time_slot_id
     LEFT JOIN users u ON u.id = c.lecturer_id
-';
-$replacementSql = "
+    WHERE t.semester_id = ?' . $courseFilter('t.course_id'));
+$stmt->bind_param('i', $semesterId);
+$stmt->execute();
+$entries = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
+$stmt = $conn->prepare("
     SELECT r.course_id, r.replacement_date, r.class_type, c.code, c.name AS course_name, v.name AS venue_name, v.building,
            u.name AS lecturer_name, ts.start_time, ts.end_time
     FROM replacement_classes r
@@ -41,22 +82,8 @@ $replacementSql = "
     JOIN venues v ON v.id = r.venue_id
     JOIN time_slots ts ON ts.id = r.time_slot_id
     LEFT JOIN users u ON u.id = c.lecturer_id
-    WHERE r.status = 'Approved' AND r.replacement_date BETWEEN ? AND ?
-";
-if ($courseId > 0) {
-    $stmt = $conn->prepare($entrySql . ' WHERE t.course_id = ?');
-    $stmt->bind_param('i', $courseId);
-    $stmt->execute();
-    $entries = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-
-    $stmt = $conn->prepare($replacementSql . ' AND r.course_id = ?');
-    $stmt->bind_param('ssi', $monday, $sunday, $courseId);
-} else {
-    $entries = $conn->query($entrySql)->fetch_all(MYSQLI_ASSOC);
-    $stmt = $conn->prepare($replacementSql);
-    $stmt->bind_param('ss', $monday, $sunday);
-}
+    WHERE r.status = 'Approved' AND r.replacement_date BETWEEN ? AND ?" . $courseFilter('r.course_id'));
+$stmt->bind_param('ss', $monday, $sunday);
 $stmt->execute();
 $replacements = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
@@ -121,34 +148,53 @@ foreach (weekdays() as $dow => $dayName) {
     $lanesByDay[$dow] = $lanes ?: [[]];
 }
 
-$prevWeek = date('Y-m-d', strtotime($monday . ' -7 days'));
-$nextWeek = date('Y-m-d', strtotime($monday . ' +7 days'));
-$query = fn($w) => 'timetable.php?' . http_build_query(['course_id' => $courseId, 'week' => $w]);
+$query = fn($w) => 'timetable.php?' . http_build_query(['semester_id' => $semesterId, 'course_id' => $courseId, 'week' => $w]);
 $kindLabel = ['normal' => 'Normal class', 'replacement' => 'Replacement class', 'holiday' => 'Class on public holiday', 'replaced' => 'Replaced - do not attend'];
 
-$pageTitle = 'Weekly Timetable';
+$pageTitle = 'Semester Timetable';
 require 'partials/header.php';
 ?>
 <div class="page-header">
-<h1>Weekly Timetable</h1>
-<p>Week of <?= htmlspecialchars(date('d M', strtotime($monday))) ?> &ndash; <?= htmlspecialchars(date('d M Y', strtotime($sunday))) ?>.
-Hover over a class for details.</p>
+<h1>Semester Timetable</h1>
+<p><?= htmlspecialchars(semester_label($semester)) ?> &middot; <strong>Week <?= $week ?> of <?= $totalWeeks ?></strong>
+(<?= htmlspecialchars(date('d M', strtotime($monday))) ?> &ndash; <?= htmlspecialchars(date('d M Y', strtotime($sunday))) ?>).
+<?= current_user_is_admin() ? 'Showing every course.' : (current_user_is_lecturer() ? 'Showing the courses you teach.' : 'Showing the courses you are enrolled in this semester.') ?>
+&middot; Hover over a class for details.</p>
 </div>
 
 <form method="get" class="filter-bar">
+<label>Semester
+<select name="semester_id" onchange="this.form.week.value=''; this.form.submit()">
+<?php foreach ($semesters as $s): ?>
+<option value="<?= (int)$s['id'] ?>" <?= (int)$s['id'] === $semesterId ? 'selected' : '' ?>><?= htmlspecialchars(semester_label($s)) ?> (<?= (int)$s['weeks'] ?> weeks)</option>
+<?php endforeach; ?>
+</select>
+</label>
+<label>Week
+<select name="week" onchange="this.form.submit()">
+<?php for ($w = 1; $w <= $totalWeeks; $w++): ?>
+<option value="<?= $w ?>" <?= $w === $week ? 'selected' : '' ?>>Week <?= $w ?> (<?= htmlspecialchars(date('d M', strtotime($semester['start_date'] . ' +' . (($w - 1) * 7) . ' days'))) ?>)</option>
+<?php endfor; ?>
+</select>
+</label>
 <label>Course
 <select name="course_id" onchange="this.form.submit()">
-<option value="0">All courses</option>
+<option value="0"><?= $visible === null ? 'All courses' : 'All my courses' ?></option>
 <?php foreach ($courses as $c): ?>
 <option value="<?= (int)$c['id'] ?>" <?= (int)$c['id'] === $courseId ? 'selected' : '' ?>><?= htmlspecialchars($c['code']) ?> <?= htmlspecialchars($c['name']) ?></option>
 <?php endforeach; ?>
 </select>
 </label>
-<label>Week of <input type="date" name="week" value="<?= htmlspecialchars($monday) ?>" onchange="this.form.submit()"></label>
-<a class="btn btn-secondary" href="<?= htmlspecialchars($query($prevWeek)) ?>">&larr; Previous</a>
-<a class="btn btn-secondary" href="<?= htmlspecialchars($query(date('Y-m-d'))) ?>">This Week</a>
-<a class="btn btn-secondary" href="<?= htmlspecialchars($query($nextWeek)) ?>">Next &rarr;</a>
+<?php if ($week > 1): ?><a class="btn btn-secondary" href="<?= htmlspecialchars($query($week - 1)) ?>">&larr; Previous</a><?php endif; ?>
+<?php if ($todayInSemester): ?><a class="btn btn-secondary" href="<?= htmlspecialchars($query(semester_week($semester, $today))) ?>">This Week</a><?php endif; ?>
+<?php if ($week < $totalWeeks): ?><a class="btn btn-secondary" href="<?= htmlspecialchars($query($week + 1)) ?>">Next &rarr;</a><?php endif; ?>
 </form>
+
+<?php if ($visible !== null && empty($visible)): ?>
+<p class="alert alert-error"><?= current_user_is_lecturer()
+    ? 'No courses have been assigned to you yet. Ask the Academic Administration Office to assign you as a course lecturer.'
+    : 'You are not enrolled in any courses for this semester. Contact the Academic Administration Office if this is wrong.' ?></p>
+<?php endif; ?>
 
 <div class="tt-scroll">
 <table class="tt-table">

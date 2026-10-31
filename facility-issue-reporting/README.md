@@ -21,8 +21,9 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   **`issue_availability.php`**).
 - "My Reports" on the homepage with status and the Estate Office's note; edit/withdraw while
   still Open (locked once work starts).
-- Register/login/logout, account page, dark/light mode, password visibility toggle, TAR UMT
-  faculty dropdown at registration.
+- Login/logout, account page (the Student/Staff ID is set by the admin and can't be changed),
+  dark/light mode, password visibility toggle. **There is no public registration** — the admin
+  creates every account.
 - Contact form and feedback page (topic + star rating), both moderated by admin.
 
 **Admin panel** (`admin/`, gated by `is_admin`; admins land on `admin/issues.php`)
@@ -30,8 +31,10 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   reporter; filter by status; delete reports. Shows the reporter's name and email.
 - Full CRUD for locations (with photo upload).
 - Moderate feedback and view contact messages.
+- **Create every account** (`admin/user_create.php`): students/staff (with Student/Staff ID and
+  faculty) or admins. Duplicate emails and IDs are rejected.
 - Manage user accounts: promote/demote admin access, delete an account (cascades to their
-  reports and feedback), or create a new admin directly. An admin can never delete or demote
+  reports and feedback). An admin can never delete or demote
   their own account.
 
 There's deliberately **no admin dashboard** (`admin/index.php`).
@@ -46,7 +49,7 @@ Seeded by `schema.sql`:
 | `student@example.com` | `student123` | Student |
 
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
-local demo** — they're well-known credentials once this code is shared. Students register their own accounts via the Register page.
+local demo** — they're well-known credentials once this code is shared. There is **no public registration**: an admin creates every student, staff and admin account from **Users → Add User**.
 
 ## Ideas for additional functions
 
@@ -112,7 +115,7 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 | `locations.php`, `board.php` | Locations with active issues; public Issue Board |
 | `create.php` / `edit.php` / `delete.php` | Issue report CRUD (own reports only) |
 | `issue_availability.php` | JSON endpoint used to grey out already-reported categories |
-| `register.php` / `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
+| `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
 | `about.php`, `contact.php`, `feedback.php` | Informational pages, contact form, feedback |
 | `partials/` | Shared navbar/footer, included by every page |
 | `admin/` | Admin-only pages |

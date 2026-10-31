@@ -6,21 +6,31 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 
 ## Features
 
+**Semesters**
+- A year has two **long semesters (14 weeks)** and one **short semester (7 weeks)**, set up by the
+  admin. The weekly timetable and student enrolments belong to a semester.
+
 **Public site**
 - Course cards with search on the homepage, and a **Courses** page listing every course's
-  regular weekly classes (day, time slot, type, venue).
-- **`timetable.php`**: a weekly timetable with days (Monday–Sunday, with dates) as rows and
-  hourly columns (8:00 am–10:00 pm), each class spanning its hours, for all courses or one
-  course, with previous/this/next week navigation. Classes are colour-coded: **green** normal,
-  **olive** replacement, **red** a class that falls on a public holiday, and greyed out/struck
-  through for a class that has been replaced. Hover over a class for its full name, lecturer
-  and venue. Public holidays are named under their date.
-- **`replacements.php`**: every approved replacement class from today onwards.
-- Register/login/logout, account page, dark/light mode, password visibility toggle, TAR UMT
-  faculty dropdown at registration.
+  regular weekly classes for the current semester.
 - Contact form and feedback page (topic + star rating), both moderated by admin.
+- **There is no public registration** — the admin creates every account.
+
+**Students** (logged in)
+- **`timetable.php`**: their own semester timetable — **only the courses they're enrolled in**
+  that semester. Days (Monday–Sunday, with dates) are rows and hourly columns (8:00 am–10:00
+  pm) are columns, each class spanning its hours. Choose the semester and **Week 1–14** (or 1–7),
+  with previous/this/next week buttons. Classes are colour-coded: **green** normal, **olive**
+  replacement, **red** a class that falls on a public holiday, and greyed out/struck through for
+  a class that has been replaced. Hover over a class for its full name, lecturer and venue.
+  Public holidays are named under their date.
+- **`replacements.php`** and the homepage: upcoming approved replacement classes for their
+  enrolled courses.
+- Login/logout, account page (the Student/Staff ID is set by the admin and can't be changed),
+  dark/light mode, password visibility toggle.
 
 **Lecturers** (accounts created by an admin, `users.role = 'lecturer'`)
+- See the same semester timetable and replacement list, for the courses they teach.
 - Request a replacement class for a course they teach: the date of the class being replaced,
   a replacement date, a fixed time slot (from `time_slots`, not free text), a venue and a
   reason. "My Replacement Requests" on the homepage, with edit/withdraw while Pending.
@@ -31,20 +41,26 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 - **You can't even select a busy venue.** The venue dropdown greys out venues already in use for
   the chosen date and slot (a fetch to **`venue_availability.php`**), and slots that have already
   started today are greyed out too. The server re-checks everything on submit.
-- The original date must be a day the course actually has a regular class; replacements must
-  be Monday–Saturday, not on a public holiday, and not in the past.
+- The original date must be a day the course actually has a regular class that semester; the
+  replacement must be in the **same semester**, Monday–Saturday, not on a public holiday, and
+  not in the past.
 
 **Admin panel** (`admin/`, gated by `is_admin`; admins land on `admin/replacements.php`)
 - Approve/reject replacement requests with a note shown to the lecturer. Re-approving a
   previously rejected request re-checks that its venue is still free.
-- Manage the regular weekly timetable (`admin/timetable.php`) — a database unique key stops two
-  classes being put in the same venue, day and slot.
+- **Semesters** (`admin/semesters.php`): add long (14-week) or short (7-week) semesters by code
+  (e.g. 202609) and the Monday week 1 starts; overlapping semesters are rejected.
+- Manage the regular weekly timetable per semester (`admin/timetable.php`) — a database unique
+  key stops two classes being put in the same venue, day and slot.
+- **Enrol students** in courses per semester (`admin/enrolments.php`), several at once.
 - Full CRUD for courses (with lecturer assignment) and venues (with photo upload).
 - Manage **public holidays** (`admin/holidays.php`), shown on the timetable.
 - Moderate feedback and view contact messages.
-- Manage user accounts: create **lecturer** or admin accounts, promote/demote admin access,
-  delete an account (cascades to their replacement requests and feedback; courses they taught
-  become unassigned). An admin can never delete or demote their own account.
+- **Create every account** (`admin/user_create.php`): students (with Student ID, faculty and
+  optionally their courses for a semester), lecturers and admins. Duplicate emails and IDs are
+  rejected.
+- Manage user accounts: promote/demote admin access, delete an account (cascades to their
+  enrolments, replacement requests and feedback; courses they taught become unassigned). An admin can never delete or demote their own account.
 
 There's deliberately **no admin dashboard** (`admin/index.php`).
 
@@ -59,7 +75,7 @@ Seeded by `schema.sql`:
 | `student@example.com` | `student123` | Student |
 
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
-local demo** — they're well-known credentials once this code is shared. Students register their own accounts; lecturer accounts are created by an admin from **Users → Add Admin / Lecturer**.
+local demo** — they're well-known credentials once this code is shared. There is **no public registration**: an admin creates every student, lecturer and admin account from **Users → Add User**.
 
 ## Ideas for additional functions
 
@@ -70,7 +86,7 @@ app. You are welcome to come up with your own instead.
 
 | Idea | Effort | What it involves |
 |---|---|---|
-| **My timetable** | Moderate | Let students be enrolled in courses (new `enrolments` table, managed by the admin) and show a personal weekly timetable with only their classes. |
+| **Copy timetable to a new semester** | Easy | A button on `admin/timetable.php` that copies every class from one semester into another, so the admin doesn't re-enter them. |
 | **Lecturer clash check** | Easy | When a lecturer requests a replacement, also reject it if they already teach another class in the same date and slot. Extends `replacement_error()` in `helpers.php`. |
 | **Cancel a class without replacement** | Easy | Let a lecturer cancel a single class (date + reason); show it struck through on the timetable. New `cancelled_classes` table. |
 | **Venue capacity check** | Easy | Add an expected class size to courses and grey out venues whose `capacity` is too small. |
@@ -116,17 +132,17 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 
 | Path | Purpose |
 |---|---|
-| `schema.sql` | Creates the database, all tables (`users`, `courses`, `venues`, `time_slots`, `timetable_entries`, `public_holidays`, `replacement_classes`, `feedback`, `contact_messages`, `sessions`) and seed data |
+| `schema.sql` | Creates the database, all tables (`users`, `courses`, `venues`, `time_slots`, `semesters`, `timetable_entries`, `enrolments`, `public_holidays`, `replacement_classes`, `feedback`, `contact_messages`, `sessions`) and seed data |
 | `config.php` | Database connection — reads `DB_HOST`/`DB_USER`/`DB_PASS`/`DB_NAME` (environment or `.env`), plus S3 photo storage config |
 | `healthz.php` | ALB health check target — `200` if the DB connection works, `500` otherwise |
 | `auth.php` | Database-backed PHP sessions + helpers: `current_user_id()`, `require_login()`, `require_admin()`, `require_lecturer()` |
 | `helpers.php` | Image upload/delete (local or S3), faculty list, and this app's own helpers |
 | `index.php` | Homepage: course cards + My Replacement Requests (lecturers) or Upcoming Replacement Classes |
-| `timetable.php` | Weekly timetable grid with replacements applied |
+| `timetable.php` | Semester timetable by week, with replacements applied (logged-in users, own courses only) |
 | `courses.php`, `replacements.php` | Course list with weekly classes; approved replacements |
 | `create.php` / `edit.php` / `delete.php` | Replacement request CRUD (lecturers, own requests only) |
 | `venue_availability.php` | JSON endpoint used to grey out busy venues |
-| `register.php` / `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
+| `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
 | `about.php`, `contact.php`, `feedback.php` | Informational pages, contact form, feedback |
 | `partials/` | Shared navbar/footer, included by every page |
 | `admin/` | Admin-only pages |

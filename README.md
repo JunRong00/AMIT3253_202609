@@ -33,8 +33,9 @@ Each folder is self-contained and follows the same structure and conventions:
   unreachable, and photo uploads can go to S3 instead of local disk.
 - **Accounts**: register/login/logout and an account page; passwords hashed with
   `password_hash()`. The two apps with lecturers add a `role` column; lecturer accounts are
-  created by an admin. In the Student Attendance System there is no public registration at
-  all — the admin creates every account and enrols students in their courses.
+  created by an admin. In the Student Attendance, Timetabling and Facility Issue Reporting
+  systems there is no public registration at all — the admin creates every account (and, for
+  attendance and timetabling, enrols students in their courses).
 - **A main read flow and a main write flow** (view records → submit a transaction → see it
   saved), with ownership checks (users only edit their own records) and status workflows.
 - **Concurrency-safe business rules** — row locks (`SELECT ... FOR UPDATE`) inside transactions

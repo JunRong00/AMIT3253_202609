@@ -11,5 +11,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 }
 
-header('Location: timetable.php');
+header('Location: timetable.php?semester_id=' . (int)($_POST['semester_id'] ?? 0));
 exit;

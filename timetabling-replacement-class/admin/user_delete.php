@@ -17,6 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $stmt->close();
 
+        $stmt = $conn->prepare('DELETE FROM enrolments WHERE user_id = ?');
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $stmt->close();
+
         $stmt = $conn->prepare('DELETE FROM replacement_classes WHERE user_id = ?');
         $stmt->bind_param('i', $id);
         $stmt->execute();

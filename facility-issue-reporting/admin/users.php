@@ -4,25 +4,28 @@ require '../auth.php';
 require_admin();
 
 $flashError = $_SESSION['flash_error'] ?? null;
-unset($_SESSION['flash_error']);
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+unset($_SESSION['flash_error'], $_SESSION['flash_success']);
 
 $myId = current_user_id();
-$users = $conn->query('SELECT id, name, email, is_admin, created_at FROM users ORDER BY name')->fetch_all(MYSQLI_ASSOC);
+$users = $conn->query('SELECT id, name, email, id_number, is_admin, created_at FROM users ORDER BY name')->fetch_all(MYSQLI_ASSOC);
 
 $pageTitle = 'Manage Users';
 require 'partials/header.php';
 ?>
 <h1>Users</h1>
-<p>Grant or revoke admin access, or remove an account.</p>
-<p><a class="btn btn-small" href="user_create.php">+ Add Admin</a></p>
+<p>Every account is created here &mdash; students, staff and admins. There is no public registration.</p>
+<p><a class="btn btn-small" href="user_create.php">+ Add User</a></p>
 <?php if ($flashError): ?><p class="alert alert-error"><?= htmlspecialchars($flashError) ?></p><?php endif; ?>
+<?php if ($flashSuccess): ?><p class="alert alert-success"><?= htmlspecialchars($flashSuccess) ?></p><?php endif; ?>
 <table>
-<tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr>
+<tr><th>Name</th><th>Student / Staff ID</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr>
 <?php foreach ($users as $u): ?>
 <tr>
 <td><?= htmlspecialchars($u['name']) ?></td>
+<td><?= htmlspecialchars($u['id_number'] ?? '-') ?></td>
 <td><?= htmlspecialchars($u['email']) ?></td>
-<td><?= $u['is_admin'] ? '<span class="badge badge-neutral">Admin</span>' : 'User' ?></td>
+<td><?= $u['is_admin'] ? '<span class="badge badge-neutral">Admin</span>' : 'Student / Staff' ?></td>
 <td><?= htmlspecialchars(date('d M Y', strtotime($u['created_at']))) ?></td>
 <td>
 <?php if ((int)$u['id'] === (int)$myId): ?>

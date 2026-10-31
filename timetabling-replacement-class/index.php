@@ -9,7 +9,8 @@ $search = trim($_GET['q'] ?? '');
 
 $courseSql = '
     SELECT c.*, u.name AS lecturer_name,
-           (SELECT COUNT(*) FROM timetable_entries t WHERE t.course_id = c.id) AS classes_per_week
+           (SELECT COUNT(*) FROM timetable_entries t WHERE t.course_id = c.id
+            AND t.semester_id = (SELECT id FROM semesters WHERE CURDATE() BETWEEN start_date AND DATE_ADD(start_date, INTERVAL weeks * 7 - 1 DAY) LIMIT 1)) AS classes_per_week
     FROM courses c
     LEFT JOIN users u ON u.id = c.lecturer_id
 ';
@@ -39,8 +40,15 @@ if ($uid && $isLecturer) {
     $stmt->execute();
     $myRequests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
-} else {
-    $upcoming = $conn->query($replacementSql . " WHERE r.status = 'Approved' AND r.replacement_date >= CURDATE() ORDER BY r.replacement_date, ts.start_time")->fetch_all(MYSQLI_ASSOC);
+} elseif ($uid) {
+    [$visibleSql, $types, $params] = replacement_visibility_sql();
+    $stmt = $conn->prepare($replacementSql . " WHERE r.status = 'Approved' AND r.replacement_date >= CURDATE() AND $visibleSql ORDER BY r.replacement_date, ts.start_time");
+    if ($types !== '') {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $upcoming = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
 }
 
 $pageTitle = 'Timetabling & Replacement Class';
@@ -86,7 +94,7 @@ require 'partials/header.php';
 <span class="badge badge-accent"><?= htmlspecialchars($c['code']) ?></span>
 <h3><?= htmlspecialchars($c['name']) ?></h3>
 <p><?= htmlspecialchars($c['lecturer_name'] ?? 'Lecturer to be assigned') ?></p>
-<p><?= (int)$c['classes_per_week'] ?> class<?= (int)$c['classes_per_week'] === 1 ? '' : 'es' ?> per week</p>
+<p><?= (int)$c['classes_per_week'] ?> class<?= (int)$c['classes_per_week'] === 1 ? '' : 'es' ?> per week this semester</p>
 <a class="btn" href="timetable.php?course_id=<?= (int)$c['id'] ?>">View Timetable</a>
 <?php if ($isLecturer && (int)$c['lecturer_id'] === (int)$uid): ?>
 <a class="btn btn-secondary" href="create.php?course_id=<?= (int)$c['id'] ?>">Request Replacement</a>
@@ -134,7 +142,7 @@ require 'partials/header.php';
 </table>
 <?php endif; ?>
 </section>
-<?php else: ?>
+<?php elseif ($uid): ?>
 <section>
 <h2>Upcoming Replacement Classes</h2>
 <?php if (empty($upcoming)): ?>
@@ -156,6 +164,10 @@ require 'partials/header.php';
 <?php endforeach; ?>
 </table>
 <?php endif; ?>
+</section>
+<?php else: ?>
+<section>
+<p><a href="login.php">Login</a> with the account given to you by the Academic Administration Office to see your timetable and replacement classes.</p>
 </section>
 <?php endif; ?>
 <?php require 'partials/footer.php'; ?>

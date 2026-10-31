@@ -405,19 +405,74 @@ function lecturer_owns_course($conn, $lecturerId, $courseId) {
     return $owns;
 }
 
+// Last day (Sunday) of a semester.
+function semester_end_date($semester) {
+    return date('Y-m-d', strtotime($semester['start_date'] . ' +' . ((int)$semester['weeks'] * 7 - 1) . ' days'));
+}
+
+function semester_label($semester) {
+    return $semester['code'] . ' ' . $semester['name'];
+}
+
+// The semester $date falls in, or null if it's between semesters.
+function semester_for_date($conn, $date) {
+    $stmt = $conn->prepare('SELECT * FROM semesters WHERE ? BETWEEN start_date AND DATE_ADD(start_date, INTERVAL weeks * 7 - 1 DAY)');
+    $stmt->bind_param('s', $date);
+    $stmt->execute();
+    $semester = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $semester;
+}
+
+// The semester running today, or else the next one to start, or else the
+// most recent one - the sensible default for timetable pages.
+function default_semester($conn) {
+    $today = date('Y-m-d');
+    return semester_for_date($conn, $today)
+        ?? $conn->query("SELECT * FROM semesters WHERE start_date > CURDATE() ORDER BY start_date LIMIT 1")->fetch_assoc()
+        ?? $conn->query('SELECT * FROM semesters ORDER BY start_date DESC LIMIT 1')->fetch_assoc();
+}
+
+// Week number (1-based) of $date within $semester.
+function semester_week($semester, $date) {
+    return (int)floor((strtotime(monday_of($date)) - strtotime($semester['start_date'])) / (7 * 86400)) + 1;
+}
+
+// Course IDs the current user may see on the timetable for a semester:
+// a student's enrolled courses, a lecturer's own courses, or null (= every
+// course) for admins.
+function visible_course_ids($conn, $semesterId) {
+    if (current_user_is_admin()) {
+        return null;
+    }
+    $uid = current_user_id();
+    if (current_user_is_lecturer()) {
+        $stmt = $conn->prepare('SELECT id FROM courses WHERE lecturer_id = ?');
+        $stmt->bind_param('i', $uid);
+    } else {
+        $stmt = $conn->prepare('SELECT course_id AS id FROM enrolments WHERE user_id = ? AND semester_id = ?');
+        $stmt->bind_param('ii', $uid, $semesterId);
+    }
+    $stmt->execute();
+    $ids = array_map('intval', array_column($stmt->get_result()->fetch_all(MYSQLI_ASSOC), 'id'));
+    $stmt->close();
+    return $ids;
+}
+
 // IDs of venues already in use on $date during $slotId: either by a regular
-// weekly class on that weekday, or by another replacement class that is
+// weekly class on that weekday (in the semester $date falls in), or by another replacement class that is
 // Pending or Approved (a Pending request holds the venue until an admin
 // decides, so two lecturers can't be promised the same room).
 function busy_venue_ids($conn, $date, $slotId, $excludeReplacementId = 0) {
     $dow = day_of_week($date);
+    $semesterId = (int)(semester_for_date($conn, $date)['id'] ?? 0);
     $stmt = $conn->prepare("
-        SELECT venue_id FROM timetable_entries WHERE day_of_week = ? AND time_slot_id = ?
+        SELECT venue_id FROM timetable_entries WHERE semester_id = ? AND day_of_week = ? AND time_slot_id = ?
         UNION
         SELECT venue_id FROM replacement_classes
         WHERE replacement_date = ? AND time_slot_id = ? AND status IN ('Pending', 'Approved') AND id != ?
     ");
-    $stmt->bind_param('iisii', $dow, $slotId, $date, $slotId, $excludeReplacementId);
+    $stmt->bind_param('iiisii', $semesterId, $dow, $slotId, $date, $slotId, $excludeReplacementId);
     $stmt->execute();
     $ids = array_map('intval', array_column($stmt->get_result()->fetch_all(MYSQLI_ASSOC), 'venue_id'));
     $stmt->close();
@@ -454,9 +509,22 @@ function replacement_error($conn, $courseId, $originalDate, $replacementDate, $s
         return 'That time slot has already started today. Please choose a later slot or date.';
     }
 
+    $semester = semester_for_date($conn, $originalDate);
+    if (!$semester) {
+        return date('d M Y', strtotime($originalDate)) . ' is not within any semester.';
+    }
+    if ($replacementDate > semester_end_date($semester)) {
+        return 'The replacement class must be held within the same semester (' . semester_label($semester)
+            . ', which ends ' . date('d M Y', strtotime(semester_end_date($semester))) . ').';
+    }
+    if ($replacementDate < $semester['start_date']) {
+        return 'The replacement class must be held within the same semester as the class it replaces.';
+    }
+
     $dow = day_of_week($originalDate);
-    $stmt = $conn->prepare('SELECT 1 FROM timetable_entries WHERE course_id = ? AND day_of_week = ?');
-    $stmt->bind_param('ii', $courseId, $dow);
+    $semesterId = (int)$semester['id'];
+    $stmt = $conn->prepare('SELECT 1 FROM timetable_entries WHERE semester_id = ? AND course_id = ? AND day_of_week = ?');
+    $stmt->bind_param('iii', $semesterId, $courseId, $dow);
     $stmt->execute();
     $hasClass = (bool)$stmt->get_result()->fetch_assoc();
     $stmt->close();
@@ -468,4 +536,23 @@ function replacement_error($conn, $courseId, $originalDate, $replacementDate, $s
         return 'That venue is already in use at this time. Please choose another venue or slot.';
     }
     return '';
+}
+
+// SQL condition (for a query aliasing replacement_classes as r and courses
+// as c) limiting replacement classes to the ones the current user should
+// see: a student's courses they're enrolled in for that date's semester, a
+// lecturer's own courses, everything for admins. Returns [sql, types, params].
+function replacement_visibility_sql() {
+    if (current_user_is_admin()) {
+        return ['1 = 1', '', []];
+    }
+    $uid = current_user_id();
+    if (current_user_is_lecturer()) {
+        return ['c.lecturer_id = ?', 'i', [$uid]];
+    }
+    return ['EXISTS (
+        SELECT 1 FROM enrolments e JOIN semesters s ON s.id = e.semester_id
+        WHERE e.user_id = ? AND e.course_id = r.course_id
+          AND r.replacement_date BETWEEN s.start_date AND DATE_ADD(s.start_date, INTERVAL s.weeks * 7 - 1 DAY)
+    )', 'i', [$uid]];
 }
