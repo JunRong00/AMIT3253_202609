@@ -90,12 +90,12 @@ require 'partials/header.php';
 <?php if (!current_user_is_lecturer()): ?>
 <form method="post">
 <label>Session Code <span class="required-mark">*</span>
-<input type="text" name="code" maxlength="6" placeholder="e.g. DEMO42" autocomplete="off" autofocus style="text-transform:uppercase; letter-spacing:0.2em; font-size:1.2rem;" required>
+<input type="text" name="code" maxlength="6" placeholder="e.g. DEMO42" autocomplete="off" autofocus class="code-input" required>
 </label>
 <button type="submit">Check In</button>
 </form>
 <?php endif; ?>
-<p class="form-hint">Checking in more than <?= LATE_AFTER_MINUTES ?> minutes after the class starts is recorded as Late.</p>
+<p class="form-hint" style="margin-top:16px;">Checking in more than <?= LATE_AFTER_MINUTES ?> minutes after the class starts is recorded as Late.</p>
 <p><a class="btn btn-secondary btn-small" href="index.php">Back to home</a></p>
 </div>
 <?php require 'partials/footer.php'; ?>

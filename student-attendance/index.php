@@ -151,7 +151,7 @@ require 'partials/header.php';
 <div class="form-card" style="max-width:560px; margin:0 0 24px;">
 <form method="post" action="checkin.php">
 <label>Session Code <span class="required-mark">*</span>
-<input type="text" name="code" maxlength="6" placeholder="e.g. DEMO42" autocomplete="off" style="text-transform:uppercase; letter-spacing:0.2em; font-size:1.2rem;" required>
+<input type="text" name="code" maxlength="6" placeholder="e.g. DEMO42" autocomplete="off" class="code-input" required>
 </label>
 <button type="submit">Check In</button>
 </form>

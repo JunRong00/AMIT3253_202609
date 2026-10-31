@@ -682,3 +682,7 @@ section { margin-bottom: 40px; }
   background: var(--accent-soft);
   cursor: zoom-in;
 }
+
+/* Check-in code box: typed code shows in spaced capitals, placeholder stays normal */
+.code-input { text-transform: uppercase; letter-spacing: 0.2em; font-size: 1.2rem; }
+.code-input::placeholder { text-transform: none; letter-spacing: normal; font-size: 0.95rem; }
