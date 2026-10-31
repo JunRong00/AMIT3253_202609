@@ -29,7 +29,8 @@ require 'partials/header.php';
 ?>
 <div class="page-header">
 <h1>Courses</h1>
-<p>Enrol in the courses you're taking this semester so you can check in to their classes.</p>
+<p>Every course offered this semester. Enrolment is handled by the Academic Administration Office &mdash;
+contact them if a course you're taking isn't marked as Enrolled.</p>
 </div>
 
 <section>
@@ -44,17 +45,9 @@ require 'partials/header.php';
 <p><?= htmlspecialchars($c['lecturer_name'] ?? 'Lecturer to be assigned') ?></p>
 <p><?= (int)$c['enrolled'] ?> enrolled &middot; <?= (int)$c['upcoming'] ?> upcoming session<?= (int)$c['upcoming'] === 1 ? '' : 's' ?></p>
 <?php if ($isStudent && $isEnrolled): ?>
-<form action="unenrol.php" method="post" onsubmit="return confirm('Unenrol from this course? Your past attendance records are kept.');">
-<input type="hidden" name="course_id" value="<?= (int)$c['id'] ?>">
-<button type="submit" class="btn btn-danger">Unenrol</button>
-</form>
-<?php elseif ($isStudent): ?>
-<form action="enrol.php" method="post">
-<input type="hidden" name="course_id" value="<?= (int)$c['id'] ?>">
-<button type="submit" class="btn">Enrol</button>
-</form>
+<a class="btn" href="checkin.php">Check In</a>
 <?php elseif (!$uid): ?>
-<a class="btn" href="login.php">Login to Enrol</a>
+<a class="btn" href="login.php">Login to Check In</a>
 <?php elseif (current_user_is_lecturer() && (int)$c['lecturer_id'] === (int)$uid): ?>
 <a class="btn" href="sessions.php?course_id=<?= (int)$c['id'] ?>">Manage Sessions</a>
 <?php endif; ?>

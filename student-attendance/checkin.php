@@ -59,7 +59,7 @@ if (current_user_is_lecturer()) {
             $stmt->close();
 
             if (!$enrolled) {
-                $error = 'You are not enrolled in ' . $session['code'] . ' ' . $session['course_name'] . '. Enrol from the Courses page first.';
+                $error = 'You are not enrolled in ' . $session['code'] . ' ' . $session['course_name'] . '. Ask the Academic Administration Office to enrol you.';
                 $conn->rollback();
             } elseif ($existing) {
                 $success = 'You have already checked in to ' . $session['code'] . ' ' . $session['course_name'] . ' (' . $existing['status'] . ').';

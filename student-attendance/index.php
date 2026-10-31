@@ -92,7 +92,7 @@ require 'partials/header.php';
 </div>
 <?php endforeach; ?>
 </div>
-<p><a href="login.php">Login</a> or <a href="register.php">register</a> to enrol in courses and check in to classes.</p>
+<p><a href="login.php">Login</a> or <a href="register.php">register</a> to check in to your classes.</p>
 </section>
 
 <?php elseif ($isLecturer): ?>
@@ -163,7 +163,7 @@ require 'partials/header.php';
 <?php if (empty($todaySessions)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128197;</div>
-<p>You have no classes today. <a href="courses.php">Enrol in a course</a> to see its sessions here.</p>
+<p>You have no classes today. Your enrolled courses are marked on the <a href="courses.php">Courses</a> page.</p>
 </div>
 <?php else: ?>
 <table>

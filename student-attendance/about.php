@@ -24,7 +24,7 @@ phone, and their attendance is recorded instantly &mdash; Present, or Late if th
 <div class="card">
 <div class="card-icon">&#128218;</div>
 <h3>1. Enrol</h3>
-<p>Students enrol in the courses they're taking this semester.</p>
+<p>The Academic Administration Office enrols each student in the courses they're taking.</p>
 </div>
 <div class="card">
 <div class="card-icon">&#128273;</div>

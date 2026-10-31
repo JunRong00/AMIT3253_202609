@@ -21,7 +21,7 @@ if (!$session) {
 }
 
 // Full class roster: every enrolled student plus anyone who checked in and
-// has since unenrolled, with their status for this session.
+// has since been removed from the course, with their status for this session.
 $stmt = $conn->prepare('
     SELECT u.id AS user_id, u.id_number, u.name, u.email, a.id AS attendance_id, a.status, a.checked_in_at
     FROM users u

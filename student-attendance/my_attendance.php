@@ -44,7 +44,7 @@ require 'partials/header.php';
 <?php if (empty($rows)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128203;</div>
-<p>No class sessions yet. <a href="courses.php">Enrol in a course</a> to see its sessions here.</p>
+<p>No class sessions yet for your enrolled courses. If you're missing a course, contact the Academic Administration Office.</p>
 </div>
 <?php else: ?>
 <table>

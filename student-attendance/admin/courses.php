@@ -30,7 +30,7 @@ require 'partials/header.php';
 <td><?= htmlspecialchars($c['code']) ?></td>
 <td><?= htmlspecialchars($c['name']) ?></td>
 <td><?= htmlspecialchars($c['lecturer_name'] ?? 'Unassigned') ?></td>
-<td><?= (int)$c['enrolled'] ?></td>
+<td><a href="enrolments.php?course_id=<?= (int)$c['id'] ?>"><?= (int)$c['enrolled'] ?></a></td>
 <td><a href="sessions.php?course_id=<?= (int)$c['id'] ?>"><?= (int)$c['session_count'] ?></a></td>
 <td>
 <a class="btn btn-secondary btn-small" href="course_edit.php?id=<?= (int)$c['id'] ?>">Edit</a>

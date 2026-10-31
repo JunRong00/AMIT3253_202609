@@ -7,7 +7,8 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 ## Features
 
 **Students**
-- Enrol/unenrol in courses on the **Courses** page.
+- See which courses they're enrolled in on the **Courses** page. Enrolment is done by the admin,
+  not by students themselves.
 - **Check in** by entering the six-character code shown in class (homepage or `checkin.php`).
   Check-in only works while the session is open for check-in, on the day of the session, for
   courses the student is enrolled in. Checking in more than 15 minutes after the start time is
@@ -38,6 +39,9 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   students appear as they check in, plus a list of enrolled students not yet checked in.
 
 **Admin panel** (`admin/`, gated by `is_admin`; admins land on `admin/sessions.php`)
+- **Enrol students in courses** (`admin/enrolments.php`): pick a course, select several students
+  at once, and remove them again if needed (past attendance records are kept). Only enrolled
+  students can check in to a course's sessions.
 - View every session across all courses, the full attendance roster for any session, and
   remove an individual check-in (e.g. to correct a mistake). Delete a session together with its
   attendance records.
@@ -108,7 +112,7 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 | `helpers.php` | Image upload/delete (local or S3), faculty list, and this app's own helpers |
 | `index.php` | Homepage: check-in box + today's classes (students) or today's sessions (lecturers) |
 | `checkin.php` | Enter a session code to check in |
-| `courses.php`, `enrol.php`, `unenrol.php` | Course list and enrolment |
+| `courses.php` | Course list, with the student's enrolled courses marked |
 | `schedule.php`, `my_attendance.php` | Upcoming sessions; personal attendance history |
 | `sessions.php`, `session_*.php` | Lecturer session management, check-in toggle and live roster |
 | `register.php` / `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
