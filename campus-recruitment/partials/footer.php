@@ -5,6 +5,7 @@
 <div class="footer-brand-name">Campus Recruitment & Applications</div>
 <p>Find campus jobs, internships, club positions and scholarships, and apply in one place.</p>
 </div>
+<?php if (current_user_id()): ?>
 <div class="footer-links">
 <h4>Explore</h4>
 <a href="index.php">Home</a>
@@ -17,6 +18,7 @@
 <a href="about.php">About Us</a>
 <a href="contact.php">Contact Us</a>
 </div>
+<?php endif; ?>
 <div class="footer-links">
 <h4>Contact</h4>
 <p>Student Career Development Centre<br>Block K, Level 2</p>

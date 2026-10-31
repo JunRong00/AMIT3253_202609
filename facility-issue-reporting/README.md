@@ -6,12 +6,12 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 
 ## Features
 
-**Public site**
+**Every logged-in user**
 - Location cards on the homepage with search, each showing how many active issues it has.
 - **`locations.php`**: every location with the issues currently being worked on, plus totals
   (locations, active issues, resolved this month).
 - **`board.php`** (Issue Board): every reported issue, filterable by status and location,
-  sorted by priority. Reporter names are never shown publicly.
+  sorted by priority. Reporter names are never shown to other users.
 - Report an issue: location, category (fixed list, not free text), title, description and
   priority.
 - **Duplicate reports are prevented concurrency-safely**: an Open/In Progress issue of the same
@@ -112,7 +112,7 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 | `auth.php` | Database-backed PHP sessions + helpers: `current_user_id()`, `require_login()`, `require_admin()` |
 | `helpers.php` | Image upload/delete (local or S3), faculty list, and this app's own helpers |
 | `index.php` | Homepage: location cards with search + My Reports |
-| `locations.php`, `board.php` | Locations with active issues; public Issue Board |
+| `locations.php`, `board.php` | Locations with active issues; Issue Board of all reports |
 | `create.php` / `edit.php` / `delete.php` | Issue report CRUD (own reports only) |
 | `issue_availability.php` | JSON endpoint used to grey out already-reported categories |
 | `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
@@ -200,14 +200,19 @@ Notes for EC2 deployment:
 
 ## Load testing
 
-Good targets for Apache Bench / JMeter / Locust: `board.php` and `index.php` (public, read-heavy). Pages that change data need a
-logged-in session cookie and a POST body — start with the public pages, then script a login if
-you want to test writes.
+Good targets for Apache Bench / JMeter / Locust: `board.php` and `index.php` (read-heavy). Every page except
+`login.php` and `healthz.php` needs a login, so your load test must first POST to `login.php`
+(with a demo account), keep the session cookie it gets back, and send that cookie with every
+request — Locust and JMeter both do this with a cookie manager / client session. `healthz.php`
+needs no cookie but only checks the database connection, so it isn't a realistic test on its own.
 
-## A note on authentication and the assignment brief
+## Login is required
 
-The assignment's assumptions say the web application is publicly accessible without an
-authentication gateway, and that a simple login may be used to identify users but isn't
-assessed as a security control. This app uses login to know who is reporting, applying,
-checking in or requesting — it is not a substitute for real campus authentication (SSO/VPN),
-which is out of scope for this proof of concept.
+**Every page needs a login** except `login.php` (and
+`healthz.php`, which the load balancer calls). This is enforced in one place: the
+`PUBLIC_PAGES` check at the bottom of `auth.php`, which every page loads, so a new page you add
+is protected automatically. Logged-out visitors are redirected to the login page, and the
+navigation is hidden until they log in.
+
+This login identifies who is using the system; it's not a substitute for real campus
+authentication (SSO/VPN), which is out of scope for this proof of concept.

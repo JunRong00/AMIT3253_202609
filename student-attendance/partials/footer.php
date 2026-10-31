@@ -5,6 +5,7 @@
 <div class="footer-brand-name">Student Attendance System</div>
 <p>Check in to class with a session code in seconds, and keep track of your attendance.</p>
 </div>
+<?php if (current_user_id()): ?>
 <div class="footer-links">
 <h4>Explore</h4>
 <a href="index.php">Home</a>
@@ -18,6 +19,7 @@
 <a href="about.php">About Us</a>
 <a href="contact.php">Contact Us</a>
 </div>
+<?php endif; ?>
 <div class="footer-links">
 <h4>Contact</h4>
 <p>Academic Administration Office<br>Block A, Ground Floor</p>

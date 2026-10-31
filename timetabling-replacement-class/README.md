@@ -10,13 +10,13 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 - A year has two **long semesters (14 weeks)** and one **short semester (7 weeks)**, set up by the
   admin. The weekly timetable and student enrolments belong to a semester.
 
-**Public site**
+**Every logged-in user**
 - Course cards with search on the homepage, and a **Courses** page listing every course's
-  regular weekly classes for the current semester.
+  regular weekly classes for the current semester (a catalogue of all courses).
 - Contact form and feedback page (topic + star rating), both moderated by admin.
 - **There is no public registration** — the admin creates every account.
 
-**Students** (logged in)
+**Students**
 - **`timetable.php`**: their own semester timetable — **only the courses they're enrolled in**
   that semester. Days (Monday–Sunday, with dates) are rows and hourly columns (8:00 am–10:00
   pm) are columns, each class spanning its hours. Choose the semester and **Week 1–14** (or 1–7),
@@ -227,14 +227,19 @@ Notes for EC2 deployment:
 
 ## Load testing
 
-Good targets for Apache Bench / JMeter / Locust: `timetable.php` and `replacements.php` (public, read-heavy — the start-of-semester rush). Pages that change data need a
-logged-in session cookie and a POST body — start with the public pages, then script a login if
-you want to test writes.
+Good targets for Apache Bench / JMeter / Locust: `timetable.php` and `replacements.php` (read-heavy — the start-of-semester rush). Every page except
+`login.php` and `healthz.php` needs a login, so your load test must first POST to `login.php`
+(with a demo account), keep the session cookie it gets back, and send that cookie with every
+request — Locust and JMeter both do this with a cookie manager / client session. `healthz.php`
+needs no cookie but only checks the database connection, so it isn't a realistic test on its own.
 
-## A note on authentication and the assignment brief
+## Login is required
 
-The assignment's assumptions say the web application is publicly accessible without an
-authentication gateway, and that a simple login may be used to identify users but isn't
-assessed as a security control. This app uses login to know who is reporting, applying,
-checking in or requesting — it is not a substitute for real campus authentication (SSO/VPN),
-which is out of scope for this proof of concept.
+**Every page needs a login** except `login.php` (and
+`healthz.php`, which the load balancer calls). This is enforced in one place: the
+`PUBLIC_PAGES` check at the bottom of `auth.php`, which every page loads, so a new page you add
+is protected automatically. Logged-out visitors are redirected to the login page, and the
+navigation is hidden until they log in.
+
+This login identifies who is using the system; it's not a substitute for real campus
+authentication (SSO/VPN), which is out of scope for this proof of concept.

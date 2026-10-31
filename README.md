@@ -36,6 +36,8 @@ Each folder is self-contained and follows the same structure and conventions:
   created by an admin. In the Student Attendance, Timetabling and Facility Issue Reporting
   systems there is no public registration at all — the admin creates every account (and, for
   attendance and timetabling, enrols students in their courses).
+- **Login required everywhere**: every page except the login page (and `healthz.php`, for the
+  load balancer) redirects to login, enforced in one place in `auth.php`.
 - **A main read flow and a main write flow** (view records → submit a transaction → see it
   saved), with ownership checks (users only edit their own records) and status workflows.
 - **Concurrency-safe business rules** — row locks (`SELECT ... FOR UPDATE`) inside transactions

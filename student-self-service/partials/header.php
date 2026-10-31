@@ -27,12 +27,14 @@ function nav_active($page, $current) {
 <nav class="navbar">
 <a class="brand" href="index.php"><img src="assets/tarumt-logo.png" alt="TAR UMT" class="brand-logo">Student Self-Service Portal</a>
 <div class="nav-links">
+<?php if ($loggedIn): ?>
 <a href="index.php" class="<?= trim(nav_active('index.php', $currentPage)) ?>">Home</a>
 <a href="services.php" class="<?= trim(nav_active('services.php', $currentPage)) ?>">Services</a>
 <a href="results.php" class="<?= trim(nav_active('results.php', $currentPage)) ?>">My Results</a>
 <a href="feedback.php" class="<?= trim(nav_active('feedback.php', $currentPage)) ?>">Feedback</a>
 <a href="about.php" class="<?= trim(nav_active('about.php', $currentPage)) ?>">About</a>
 <a href="contact.php" class="<?= trim(nav_active('contact.php', $currentPage)) ?>">Contact</a>
+<?php endif; ?>
 <?php if ($loggedIn): ?>
 <div class="user-menu">
 <button type="button" class="nav-user user-menu-trigger" aria-haspopup="true" aria-expanded="false">

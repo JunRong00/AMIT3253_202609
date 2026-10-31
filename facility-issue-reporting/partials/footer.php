@@ -5,6 +5,7 @@
 <div class="footer-brand-name">Campus Facility Issue Reporting</div>
 <p>Report a broken facility in under a minute and follow its repair status online.</p>
 </div>
+<?php if (current_user_id()): ?>
 <div class="footer-links">
 <h4>Explore</h4>
 <a href="index.php">Home</a>
@@ -17,6 +18,7 @@
 <a href="about.php">About Us</a>
 <a href="contact.php">Contact Us</a>
 </div>
+<?php endif; ?>
 <div class="footer-links">
 <h4>Contact</h4>
 <p>Estate Management Office<br>Block D, Ground Floor</p>

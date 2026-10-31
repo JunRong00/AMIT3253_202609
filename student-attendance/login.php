@@ -41,6 +41,6 @@ require 'partials/header.php';
 </label>
 <button type="submit">Login</button>
 </form>
-<p>Don't have an account? Accounts are created by the Academic Administration Office &mdash; <a href="contact.php">contact us</a>.</p>
+<p>Don't have an account? Accounts are created by the Academic Administration Office.</p>
 </div>
 <?php require 'partials/footer.php'; ?>

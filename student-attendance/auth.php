@@ -108,3 +108,10 @@ function require_lecturer() {
         die('Lecturers only.');
     }
 }
+
+// Every page needs a login except these. (healthz.php doesn't load this
+// file at all, so the load balancer's health check always works.)
+const PUBLIC_PAGES = ['login.php', 'register.php'];
+if (!in_array(basename($_SERVER['SCRIPT_FILENAME'] ?? ''), PUBLIC_PAGES, true)) {
+    require_login();
+}
