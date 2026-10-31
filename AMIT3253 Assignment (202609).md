@@ -114,7 +114,7 @@ concept.
 
 - While the web servers must span multiple Availability Zones for high availability, the backend relational database (Amazon RDS) is assumed to be hosted within a single Availability Zone. 
 
-- The web application is publicly accessible to end-users without requiring an authentication gateway. A simple login may be used to identify users (e.g., for attendance or applications), but it is not assessed as a security control. 
+- The web application requires users to log in with an account created by the administrator (self-registration may be allowed for some scenarios). This login identifies users for the system's functions and is not assessed as a security control; production-grade authentication such as SSO, MFA or VPN access is out of scope. 
 
 - Cost calculations generated via the AWS Pricing Calculator are understood to be approximations for architectural planning rather than strict production billing forecasts. 
 
