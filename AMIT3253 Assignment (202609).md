@@ -81,29 +81,9 @@ To provide flexibility, you may choose to build your platform around any of the 
 
 - Campus Facility Issue Reporting System 
 
-_**Note:** Booking/reservation, ticketing, and e-commerce systems are not accepted for this semester._ 
-
-## **Sample Application and Additional Functions** 
-
-A ready-to-use sample application (web code and database schema) is provided for each of the scenarios above. The provided functions work out of the box, allowing you to focus on designing and deploying the AWS infrastructure. 
-
-Deploying the sample application with all provided functions working correctly can earn up to **8 marks** for the Functional criterion. To score **9 or 10 marks**, your group must design and implement **one (9 marks) or two (10 marks) additional functions** on top of the sample application. 
-
-An additional function must: 
-
-- Introduce new user-facing behaviour that is not already provided in the sample application (e.g., a new form, workflow, or report). 
-
-- Perform read/write operations on the database. 
-
-- Be demonstrated working on your deployed AWS environment. 
-
-- Be documented in your report, including its purpose, before-and-after screenshots, and the database tables or columns it uses. 
-
-Cosmetic changes, such as styling, colour themes, renamed labels, or static pages, do not count as additional functions. 
-
 ## **Technical Deliverables** 
 
-|**Functional**|●The platform must be completely operational.<br>●End-users must be able to view relevant records (e.g.,<br>timetables, results, job openings, attendance records, or issue<br>status) and perform a core transaction (e.g., submit a request,<br>apply, check in, or report an issue).<br>●Additional functions (see Sample Application and Additional<br>Functions) are required to score above 8 marks.|
+|**Functional**|●The platform must be completely operational.<br>●End-users must be able to view relevant records (e.g.,<br>timetables, results, job openings, attendance records, or issue<br>status) and perform a core transaction (e.g., submit a request,<br>apply, check in, or report an issue).<br>●One or two additional functions must be added to the<br>sample application to score above 8 marks.|
 |---|---|
 
 
