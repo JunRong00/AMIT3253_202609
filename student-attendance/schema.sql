@@ -18,7 +18,7 @@ CREATE TABLE users (
 --   admin@example.com    / admin123     (admin)
 --   lecturer@example.com / lecturer123  (lecturer - teaches the seeded courses)
 --   student@example.com  / student123   (student - enrolled in two courses)
--- Students register themselves; lecturer accounts are created by an admin.
+-- There is no public registration: an admin creates every account.
 INSERT INTO users (name, email, password_hash, id_number, faculty, date_of_birth, role, is_admin) VALUES
 ('Admin', 'admin@example.com', '$2y$10$HI3gLmyD4OGmfNLAGUIL8.eBhhKu5nzL7wTDws.6mUNO9V44kyM5q', NULL, NULL, NULL, 'student', 1),
 ('Dr. Demo Lecturer', 'lecturer@example.com', '$2y$10$fpapO3ZtveFhM52pbu9WneC3iXWBUo/hTiJAO4x0DOfcknwdrgGG2', 'S1001', 'Faculty of Computing and Information Technology', '1985-06-20', 'lecturer', 0),

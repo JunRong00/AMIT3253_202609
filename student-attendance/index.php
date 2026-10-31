@@ -92,7 +92,7 @@ require 'partials/header.php';
 </div>
 <?php endforeach; ?>
 </div>
-<p><a href="login.php">Login</a> or <a href="register.php">register</a> to check in to your classes.</p>
+<p><a href="login.php">Login</a> with the account given to you by the Academic Administration Office to check in to your classes.</p>
 </section>
 
 <?php elseif ($isLecturer): ?>

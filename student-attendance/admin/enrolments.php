@@ -93,7 +93,7 @@ require 'partials/header.php';
 <section>
 <h2>Enrol Students</h2>
 <?php if (empty($available)): ?>
-<p>Every registered student is already enrolled in this course.</p>
+<p>Every student account is already enrolled in this course. New students are added from <a href="user_create.php">Users &rarr; Add User</a>.</p>
 <?php else: ?>
 <form method="post" class="form-card" style="max-width:560px; margin:0 0 24px;">
 <input type="hidden" name="course_id" value="<?= (int)$courseId ?>">
