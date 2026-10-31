@@ -75,7 +75,10 @@ function current_user_is_admin() {
 
 function require_login() {
     if (!current_user_id()) {
-        header('Location: login.php');
+        // Admin pages live one folder down, so send them to ../login.php -
+        // a bare 'login.php' from admin/ would 404.
+        $inAdmin = basename(dirname($_SERVER['SCRIPT_FILENAME'] ?? '')) === 'admin';
+        header('Location: ' . ($inAdmin ? '../' : '') . 'login.php');
         exit;
     }
 }
