@@ -5,7 +5,7 @@
 |**Objective**|To fulfill the coursework requirements for students who are taking the<br>course AMIT3253 Cloud Computing for Business.|
 |---|---|
 |**Learning**<br>**Outcomes Being**<br>**Assessed**|CLO 2:<br>Discuss cloud computing infrastructure, management and<br>scheduling, storage and security to online business. (A2,<br>PLO10), MQF Cluster: C4B<br>CLO 3:<br>Demonstrate a simple cloud business application from<br>various cloud service providers. (C3, PLO6), MQF<br>Cluster: C3D|
-|**Submission**<br>**Deadlines**|Week 13 Practical Class|
+|**Submission**<br>**Deadlines**|Week 6 Friday|
 |**Assessment**|This is a group assignment with 2-3 students per group.<br>This assignment contributes**50%** to the overall continuous assessment<br>marks for the continuous assessment.|
 |**Assignment**<br>**Report Content**|An assignment template will be provided. Students are required to<br>adhere to the prescribed format and structure when preparing the report.<br>The report shall include the following sections:<br>1. Front Cover<br>2. Assignment Rubrics<br>3. Member’s Profile<br>4. Introduction<br>5. Main Content (in accordance with the assignment rubrics)<br>6. Conclusion<br>7. Formatted References (APA)<br>8. Appendix|
 |**Submission**|1. A report using .pptx and .pdf<br>2. URL during presentation|
