@@ -29,23 +29,23 @@
 
 Students are strongly advised to submit their coursework on time to avoid penalties. 
 
-## **AWS Cloud Challenge: Deploying a Scalable and Secure Booking & Ticketing Platform** 
+## **AWS Cloud Challenge: Deploying a Scalable and Secure Campus Digital Services Platform** 
 
 ## **Overview and Objectives** 
 
 Throughout your AWS Academy courses, you have completed hands-on labs to learn how to create virtual servers, configure networks, and secure cloud resources. 
 
-In this capstone project, you will step away from step-by-step lab instructions to design, deploy, and test a production-ready **Online Booking and Ticketing Platform** . You may choose any industry for your platform, such as movie ticketing, concert bookings, sports events, or transport reservations. Your solution must be fully functional, resilient to traffic spikes, secure, and cost-optimized. 
+In this capstone project, you will step away from step-by-step lab instructions to design, deploy, and test a production-ready **Campus Digital Services Platform** . A ready-to-use sample application is provided for each scenario so that you can focus on the cloud architecture, and you are expected to extend it with your own additional functions. Your solution must be fully functional, resilient to traffic spikes, secure, and cost-optimized. 
 
 By the end of this project, you will be able to do the following: 
 
 - **Design Technical Blueprints:** Create a detailed AWS Architecture Diagram and a Solution Overview Diagram mapping out all cloud resources and traffic flows. 
 
-- **Deploy a Functional Application:** Deploy a fully working booking web application that successfully connects a web server running on EC2 to a relational database. 
+- **Deploy a Functional Application:** Deploy a fully working web application that successfully connects a web server running on EC2 to a relational database. 
 
 - **Implement Load Balancing:** Configure an Elastic Load Balancer (ELB) to evenly distribute incoming user traffic and manage system availability. 
 
-- **Architect Scalable Infrastructure:** Set up an Auto Scaling Group (ASG) with scaling policies to automatically handle sudden ticketing traffic spikes. 
+- **Architect Scalable Infrastructure:** Set up an Auto Scaling Group (ASG) with scaling policies to automatically handle sudden peak-demand traffic spikes. 
 
 - **Configure a Secure Network Environment:** Design a Virtual Private Cloud (VPC) with isolated public and private subnets, placing the database safely away from the public internet. 
 
@@ -65,35 +65,55 @@ In this lab environment, access to AWS services and service actions might be res
 
 ## **Case Study** 
 
-TAR UMT’s management aims to modernize its campus operations by introducing a **cloud-based Online Booking and Ticketing Platform** . Currently, many services across the university, ranging from facility rentals to campus events rely on manual forms or legacy registration systems. This often leads to system crashes, long digital queues, and scheduling conflicts during peak registration hours (such as when exam week study rooms open up or when concert tickets go on sale). 
+TAR UMT’s management aims to modernize its campus operations by introducing a **cloud-based Campus Digital Services Platform** . Currently, many services across the university, ranging from class scheduling and attendance taking to student records and facility maintenance, rely on manual forms, spreadsheets, or legacy systems. This often leads to system crashes, long digital queues, and lost or inconsistent records during peak academic periods (such as when examination results are released, when hundreds of students check in at the start of a class, or when internship applications open). 
 
-In your role as a cloud engineer, you are assigned to design and implement a proof of concept (POC) hosted on the AWS Cloud for a **ticketing or booking system** . To ensure a broad scope, your project can focus on any official TAR UMT campus service, an academic department need, or an authorized external vendor/partner operating on the campus. Your system must be designed in alignment with the **AWS Well-Architected Framework** to ensure it remains scalable during high-traffic spikes, secure, and cost-optimized. 
+In your role as a cloud engineer, you are assigned to design and implement a proof of concept (POC) hosted on the AWS Cloud for a **campus digital service** . To ensure a broad scope, your project can focus on any official TAR UMT campus service, an academic department need, or an authorized external vendor/partner operating on the campus. Your system must be designed in alignment with the **AWS Well-Architected Framework** to ensure it remains scalable during high-traffic spikes, secure, and cost-optimized. 
 
-To provide flexibility, you may choose to build your booking platform around any of the following scenarios, including but not limited to: 
+To provide flexibility, you may choose to build your platform around any of the following scenarios, including but not limited to: 
 
-- Campus Sports & Facilities Amenities 
+- Timetabling & Replacement Class System 
 
-- Student Society & Event Ticketing 
+- Student Self-Service Portal 
 
-- Academic & Library Resource Scheduling 
+- Campus Recruitment & Application Platform 
 
-- Campus Shuttle Bus & Transport Ticketing 
+- Student Attendance System 
 
-- On-Campus Commercial & Vendor Services 
+- Campus Facility Issue Reporting System 
+
+_**Note:** Booking/reservation, ticketing, and e-commerce systems are not accepted for this semester._ 
+
+## **Sample Application and Additional Functions** 
+
+A ready-to-use sample application (web code and database schema) is provided for each of the scenarios above. The provided functions work out of the box, allowing you to focus on designing and deploying the AWS infrastructure. 
+
+Deploying the sample application with all provided functions working correctly can earn up to **8 marks** for the Functional criterion. To score **9 or 10 marks**, your group must design and implement **one (9 marks) or two (10 marks) additional functions** on top of the sample application. 
+
+An additional function must: 
+
+- Introduce new user-facing behaviour that is not already provided in the sample application (e.g., a new form, workflow, or report). 
+
+- Perform read/write operations on the database. 
+
+- Be demonstrated working on your deployed AWS environment. 
+
+- Be documented in your report, including its purpose, before-and-after screenshots, and the database tables or columns it uses. 
+
+Cosmetic changes, such as styling, colour themes, renamed labels, or static pages, do not count as additional functions. 
 
 ## **Technical Deliverables** 
 
-|**Functional**|●The booking and ticketing platform must be completely<br>operational.<br>●End-users must be able to view available events, facilities, or<br>time slots, choose ticket quantities, and complete a reservation.|
+|**Functional**|●The platform must be completely operational.<br>●End-users must be able to view relevant records (e.g.,<br>timetables, results, job openings, attendance records, or issue<br>status) and perform a core transaction (e.g., submit a request,<br>apply, check in, or report an issue).<br>●Additional functions (see Sample Application and Additional<br>Functions) are required to score above 8 marks.|
 |---|---|
 
 
 
-||●The application must successfully perform read/write<br>operations, saving all booking transactions directly into the<br>database.|
+||●The application must successfully perform read/write<br>operations, saving all user transactions directly into the<br>database.|
 |---|---|
 |**Secure**|●A custom VPC spanning multiple Availability Zones with<br>properly segregated public and private subnets.<br>●The relational database (Amazon RDS) must reside strictly<br>within a private subnet, ensuring it has zero direct exposure or<br>routes to the public internet.<br>●Implement strict Security Groups acting as firewalls. The load<br>balancer must only accept public web traffic (HTTP/HTTPS),<br>and the application servers must only accept traffic routed<br>directly from the load balancer.|
 |**Cost Optimized**|●You must use the official AWS Pricing Calculator to generate a<br>comprehensive monthly cost estimation report for your<br>architecture.<br>●Include a brief written justification explaining your resource<br>sizing choices (e.g., choice of EC2 instance types and RDS<br>configurations) to prove your design is financially optimized<br>and fits within realistic budget constraints.|
 |**High Performing**|●You are required to conduct a live stress and load test on your<br>deployed platform using simulation tools (such as Apache<br>Bench, JMeter, or Locust)<br>●Your report must include performance data and metric<br>screenshots proving that the system remains stable, fast, and<br>high performing under heavy simulated user traffic.|
-|**Scalability**|●You must implement an Auto Scaling Group (ASG) to manage<br>your web application servers.<br>●The ASG must be configured with dynamic scaling policies<br>(e.g., tracking average CPU utilization) that automatically<br>launch new EC2 instances to handle sudden ticketing traffic<br>spikes, and terminate them when traffic subsides.|
+|**Scalability**|●You must implement an Auto Scaling Group (ASG) to manage<br>your web application servers.<br>●The ASG must be configured with dynamic scaling policies<br>(e.g., tracking average CPU utilization) that automatically<br>launch new EC2 instances to handle sudden peak-demand traffic<br>spikes, and terminate them when traffic subsides.|
 |**Load Balanced**|●You must configure an Elastic Load Balancer (ELB) to serve as<br>the single point of contact for incoming user traffic.<br>●The ELB must distribute incoming web traffic evenly across<br>healthy server instances located in different Availability Zones<br>to prevent any single server from overloading.|
 
 
@@ -114,7 +134,7 @@ concept.
 
 - While the web servers must span multiple Availability Zones for high availability, the backend relational database (Amazon RDS) is assumed to be hosted within a single Availability Zone. 
 
-- The ticketing website is publicly accessible to end-users without requiring a user login, registration, or authentication gateway. 
+- The web application is publicly accessible to end-users without requiring an authentication gateway. A simple login may be used to identify users (e.g., for attendance or applications), but it is not assessed as a security control. 
 
 - Cost calculations generated via the AWS Pricing Calculator are understood to be approximations for architectural planning rather than strict production billing forecasts. 
 
@@ -152,7 +172,7 @@ In this phase, you will start to build the solution. The objective of this phase
 
 ||●AWS Academy Cloud Foundation – Lab: Build your VPC and Launch a<br>Web Server|
 |---|---|
-|2|**Creating a virtual machine**<br>●Create a virtual machine in the cloud to host the web application.<br>●Install the required web application and database on the virtual machine<br>using your own code, a template, or WordPress.<br>Tips<br>●Use a compute service such as Amazon Elastic Compute Cloud (Amazon<br>EC2).<br>●Use the latest Amazon Linux 2023 Amazon Machine Image (AMI).<br>●Build a simple web application and create a database on EC2, or you can<br>choose to do this in Phase 3 (optional). Phase 3 involves creating a<br>database on RDS.|
+|2|**Creating a virtual machine**<br>●Create a virtual machine in the cloud to host the web application.<br>●Install the required web application and database on the virtual machine<br>using the provided sample application for your chosen scenario.<br>Tips<br>●Use a compute service such as Amazon Elastic Compute Cloud (Amazon<br>EC2).<br>●Use the latest Amazon Linux 2023 Amazon Machine Image (AMI).<br>●Build a simple web application and create a database on EC2, or you can<br>choose to do this in Phase 3 (optional). Phase 3 involves creating a<br>database on RDS.|
 |3|**Testing the deployment**<br>●Test the deployment of the web application to ensure it is accessible from<br>the internet and functional.<br>Tips<br>●To access the web application, use the IPv4 address of the virtual<br>machine.|
 
 
@@ -188,7 +208,7 @@ In this phase, you will continue building. The objective is to separate the data
 
 ## **Faculty of Computing and Information Technology** 
 
-AWS Cloud Challenge: Deploying a Scalable and Secure Booking & Ticketing Platform 
+AWS Cloud Challenge: Deploying a Scalable and Secure Campus Digital Services Platform 
 
 ## DFT2 (GROUP X) 
 
@@ -243,7 +263,7 @@ Each member must attach a passport-size photo (4 cm × 4 cm) with a plain backgr
 |**Criteria**|**Unsatisfactory**<br>**(1-3)**|**Needs Improvement**<br>**(4-5)**|**Good**<br>**(6-8)**|**Excellent**<br>**(9-10)**|**Mark**|
 |---|---|---|---|---|---|
 |**AWS**<br>**Architecture**<br>**Diagram**<br>**(5m)**<br>**&**<br>**Solution**<br>**Overview**<br>**Diagram**<br>**(5m)**|Diagram is missing,<br>heavily incomplete, or uses<br>non-standard cloud icons.<br>Network boundaries (VPC,<br>subnets) are omitted or<br>incorrect.<br>Flow diagram is missing,<br>or the sequential flow of<br>data from the end-user to<br>the backend database is<br>entirely absent or illogical.|A diagram is provided but<br>lacks detail. Component<br>relationships are vague, or<br>structural layout (public vs.<br>private subnets) is poorly<br>defined.<br>A diagram is provided, but<br>the transactional flow is<br>confusing, or the user<br>journey lacks clear<br>step-by-step logic.|The diagram is complete<br>and mostly accurate.<br>Clearly displays the<br>custom VPC layout,<br>subnets, EC2 instances,<br>ELB, ASG, and RDS with<br>minor labeling gaps.<br>The diagram successfully<br>maps out the functional<br>user journey and data<br>pathway from the web<br>interface down to the data<br>tier with minor logical<br>gaps.|Exceptional,<br>production-ready<br>infrastructure diagram.<br>Perfectly details the entire<br>AWS environment,<br>security group boundaries,<br>and gateways.<br>A highly detailed visual<br>mapping of the functional<br>data journey. Flawlessly<br>illustrates how requests<br>progress through the load<br>balancer, application, and<br>database transactions.||
-|**Functional**|The booking platform is<br>non-functional. Users<br>cannot view slots/events or<br>make reservations, and<br>database operations fail<br>completely.|The website loads, but core<br>booking components are<br>broken. Database<br>connections are unstable,<br>or errors occur during data<br>submission.|The booking platform is<br>functional. Users can<br>browse events and book<br>tickets successfully, though<br>minor UI/UX bugs or<br>validation errors exist.|The application is fully<br>operational and seamless.<br>Users can flawlessly<br>browse events, select<br>quantities, complete<br>bookings, and verify data<br>updates in the database.||
+|**Functional**|The deployed application<br>is non-functional. Pages<br>fail to load, or database<br>read/write operations fail<br>completely.|The application loads<br>through the load balancer,<br>but some of the provided<br>functions are broken.<br>Database connections are<br>unstable, or errors occur<br>during data submission.|All provided functions work<br>correctly on the deployed<br>AWS environment. Users<br>can view records, complete<br>transactions, and verify<br>data updates in the<br>database. No additional<br>functions were added.|All provided functions work<br>seamlessly, and the group<br>has added one (9 marks)<br>or two (10 marks)<br>meaningful additional<br>functions that read and<br>write to the database, are<br>demonstrated on AWS, and<br>are documented in the<br>report.||
 |**Secure**|Security is ignored. The<br>database is exposed to the<br>public internet, or Security<br>Groups are wide open<br>(0.0.0.0/0) across all ports.|A VPC is present, but<br>resources are misplaced<br>(e.g., database sits in a<br>public subnet). Security<br>groups are overly<br>permissive.|Network segregation is<br>mostly correct. The<br>database sits in a private<br>subnet, and Security<br>Groups restrict basic traffic<br>with minor rule|Exemplary security<br>implementation. Custom<br>VPC has isolated public<br>and private subnets. Both<br>the EC2 application<br>instances and the RDS||
 
 
