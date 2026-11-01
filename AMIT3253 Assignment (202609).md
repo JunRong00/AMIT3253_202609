@@ -118,7 +118,7 @@ concept.
 
 - Cost calculations generated via the AWS Pricing Calculator are understood to be approximations for architectural planning rather than strict production billing forecasts. 
 
-_**Disclaimer & Security Best Practice:** In a production environment, industry best practices dictate that campus applications should restrict access via the university network (such as a VPN) and enforce user authentication. However, because you are building this application as a Proof of Concept (POC), those advanced security features are beyond the scope of this project. You are, however, encouraged to explore and document how you would implement this additional functionality in a real-world deployment._ 
+_**Disclaimer & Security Best Practice:** In a production environment, industry best practices dictate that campus applications should restrict access via the university network (such as a VPN) and enforce production-grade authentication (such as single sign-on with the university account and multi-factor authentication). However, because you are building this application as a Proof of Concept (POC), those advanced security features are beyond the scope of this project; the basic login provided in the application is sufficient. You are, however, encouraged to explore and document how you would implement this additional functionality in a real-world deployment._ 
 
 ## **Approach** 
 
