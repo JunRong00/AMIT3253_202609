@@ -41,18 +41,9 @@ foreach (weekdays() as $dow => $dayName) {
 // Students see only their enrolled courses, lecturers the courses they
 // teach, admins everything.
 $visible = visible_course_ids($conn, $semesterId);
-$courses = $conn->query('SELECT id, code, name FROM courses ORDER BY code')->fetch_all(MYSQLI_ASSOC);
-if ($visible !== null) {
-    $courses = array_values(array_filter($courses, fn($c) => in_array((int)$c['id'], $visible, true)));
-}
-$courseId = (int)($_GET['course_id'] ?? 0);
-if ($courseId > 0 && $visible !== null && !in_array($courseId, $visible, true)) {
-    $courseId = 0;
-}
-$shownIds = $courseId > 0 ? [$courseId] : $visible;
-// Course IDs come from the database or are cast to int, so they're safe to
-// inline into the IN (...) list.
-$courseFilter = fn($column) => $shownIds === null ? '' : ' AND ' . $column . ' IN (' . (implode(',', array_map('intval', $shownIds)) ?: '0') . ')';
+// Course IDs come from the database, so they're safe to inline into the
+// IN (...) list.
+$courseFilter = fn($column) => $visible === null ? '' : ' AND ' . $column . ' IN (' . (implode(',', array_map('intval', $visible)) ?: '0') . ')';
 
 // Hourly columns from the earliest slot start to the latest slot end.
 $range = $conn->query('SELECT MIN(start_time) AS first_start, MAX(end_time) AS last_end FROM time_slots')->fetch_assoc();
@@ -148,7 +139,7 @@ foreach (weekdays() as $dow => $dayName) {
     $lanesByDay[$dow] = $lanes ?: [[]];
 }
 
-$query = fn($w) => 'timetable.php?' . http_build_query(['semester_id' => $semesterId, 'course_id' => $courseId, 'week' => $w]);
+$query = fn($w) => 'timetable.php?' . http_build_query(['semester_id' => $semesterId, 'week' => $w]);
 $kindLabel = ['normal' => 'Normal class', 'replacement' => 'Replacement class', 'holiday' => 'Class on public holiday', 'replaced' => 'Replaced - do not attend'];
 
 $pageTitle = 'Semester Timetable';
@@ -175,14 +166,6 @@ require 'partials/header.php';
 <?php for ($w = 1; $w <= $totalWeeks; $w++): ?>
 <option value="<?= $w ?>" <?= $w === $week ? 'selected' : '' ?>>Week <?= $w ?> (<?= htmlspecialchars(date('d M', strtotime($semester['start_date'] . ' +' . (($w - 1) * 7) . ' days'))) ?>)</option>
 <?php endfor; ?>
-</select>
-</label>
-<label>Course
-<select name="course_id" onchange="this.form.submit()">
-<option value="0"><?= $visible === null ? 'All courses' : 'All my courses' ?></option>
-<?php foreach ($courses as $c): ?>
-<option value="<?= (int)$c['id'] ?>" <?= (int)$c['id'] === $courseId ? 'selected' : '' ?>><?= htmlspecialchars($c['code']) ?> <?= htmlspecialchars($c['name']) ?></option>
-<?php endforeach; ?>
 </select>
 </label>
 <?php if ($week > 1): ?><a class="btn btn-secondary" href="<?= htmlspecialchars($query($week - 1)) ?>">&larr; Previous</a><?php endif; ?>

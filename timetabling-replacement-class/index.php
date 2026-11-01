@@ -125,7 +125,7 @@ require 'partials/header.php';
 <h3><?= htmlspecialchars($c['name']) ?></h3>
 <p><?= htmlspecialchars($c['lecturer_name'] ?? 'Lecturer to be assigned') ?></p>
 <p><?= (int)$c['classes_per_week'] ?> class<?= (int)$c['classes_per_week'] === 1 ? '' : 'es' ?> per week this semester</p>
-<a class="btn" href="timetable.php?semester_id=<?= $semesterId ?>&amp;course_id=<?= (int)$c['id'] ?>">View Timetable</a>
+<a class="btn" href="timetable.php?semester_id=<?= $semesterId ?>">View Timetable</a>
 <?php if ($isLecturer && (int)$c['lecturer_id'] === (int)$uid): ?>
 <a class="btn btn-secondary" href="create.php?course_id=<?= (int)$c['id'] ?>">Request Replacement</a>
 <?php endif; ?>

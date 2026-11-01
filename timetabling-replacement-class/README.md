@@ -20,15 +20,16 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   admin. The weekly timetable and student enrolments belong to a semester.
 
 **Every logged-in user**
-- Course cards with search on the homepage, and a **Courses** page listing every course's
-  regular weekly classes for the current semester (a catalogue of all courses).
+- Homepage: **My Courses** for the current semester (a student's enrolled courses, a lecturer's
+  own courses, or every course for admins), with search, plus a **Courses** page listing every
+  course's regular weekly classes (the full catalogue).
 - Contact form and feedback page (topic + star rating), both moderated by admin.
 - **There is no public registration** — the admin creates every account.
 
 **Students**
 - **`timetable.php`**: their own semester timetable — **only the courses they're enrolled in**
   that semester. Days (Monday–Sunday, with dates) are rows and hourly columns (8:00 am–10:00
-  pm) are columns, each class spanning its hours. Choose the semester and **Week 1–14** (or 1–7),
+  pm) are columns, each class spanning its hours. Filter by semester and **Week 1–14** (or 1–7),
   with previous/this/next week buttons. Classes are colour-coded: **green** normal, **olive**
   replacement, **red** a class that falls on a public holiday, and greyed out/struck through for
   a class that has been replaced. Hover over a class for its full name, lecturer and venue.
