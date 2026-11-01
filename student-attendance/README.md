@@ -15,9 +15,13 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 
 ## Features
 
+**Semesters**
+- A year has two **long semesters (14 weeks)** and one **short semester (7 weeks)**, set up by the
+  admin. Students are enrolled per semester, and every class session falls within a semester.
+
 **Students**
-- See which courses they're enrolled in on the **Courses** page. Enrolment is done by the admin,
-  not by students themselves.
+- See the courses they're enrolled in for a chosen semester on **My Courses**. Enrolment is done
+  by the admin, not by students themselves.
 - **Check in** by entering the six-character code shown in class (homepage or `checkin.php`).
   Check-in only works while the session is open for check-in, on the day of the session, for
   courses the student is enrolled in. Checking in more than 15 minutes after the start time is
@@ -28,16 +32,18 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   while checking it's still open, and a unique key on (session, student) means a double
   submit can never create two records — the second attempt just reports "already checked in".
 - "Today's Classes" and "Recent Check-Ins" on the homepage; **`my_attendance.php`** lists every
-  session so far with Present / Late / Absent.
+  session so far in a chosen semester with Present / Late / Absent.
 - **`schedule.php`**: upcoming sessions for your enrolled courses.
 - Login/logout, account page (Student ID is set by the admin and can't be changed by the user), dark/light mode, password visibility toggle, TAR UMT
   faculty dropdown. Contact form and feedback page, moderated by admin.
 
 **Lecturers** (accounts created by an admin, `users.role = 'lecturer'`)
 - "Today's Sessions" and "My Courses" on the homepage; **`sessions.php`** lists every session
-  for the courses they teach.
-- Schedule, edit and delete sessions (date, start/end time, venue, class type). A session
-  students have already checked in to can't be deleted.
+  for the courses they teach, filtered by semester and course. **My Courses** shows only the
+  courses they teach.
+- Schedule, edit and delete sessions (date, start/end time, venue, class type). **Repeat weekly**
+  schedules the same class for up to 14 weeks in one go, stopping at the end of the semester.
+  A session students have already checked in to can't be deleted.
 - **Open check-in** on the day of the session: a fresh six-character code is generated each
   time (no look-alike characters such as 0/O or 1/I), shown large for projecting. It stays open
   until the session's end time and then closes by itself; the lecturer can also close it early.
@@ -48,10 +54,12 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   students appear as they check in, plus a list of enrolled students not yet checked in.
 
 **Admin panel** (`admin/`, gated by `is_admin`; admins land on `admin/sessions.php`)
-- **Enrol students in courses** (`admin/enrolments.php`): pick a course, select several students
-  at once, and remove them again if needed (past attendance records are kept). Only enrolled
-  students can check in to a course's sessions.
-- View every session across all courses, the full attendance roster for any session, and
+- **Semesters** (`admin/semesters.php`): add long (14-week) or short (7-week) semesters by code and
+  start date; overlapping semesters are rejected.
+- **Enrol students in courses per semester** (`admin/enrolments.php`): pick a semester and course,
+  select several students at once, and remove them again if needed (past attendance records are
+  kept). Only students enrolled for that semester can check in to a course's sessions.
+- View every session across all courses (filtered by semester), the full attendance roster for any session, and
   remove an individual check-in (e.g. to correct a mistake). Delete a session together with its
   attendance records.
 - Full CRUD for courses (with lecturer assignment and photo upload).
@@ -93,6 +101,7 @@ app. You are welcome to come up with your own instead.
 | **Attendance percentage** | Easy | On `my_attendance.php`, show each course's attendance % (Present + Late ÷ sessions so far) and highlight courses below 80%. Reads `attendance`, `class_sessions`, `enrolments`. |
 | **Lecturer attendance report** | Easy | A page for lecturers listing every enrolled student's attendance % for one course, with a low-attendance warning list. |
 | **Manual mark by lecturer** | Easy | Let a lecturer mark a student Present/Late from `session_view.php` (e.g. a student whose phone died). Insert into `attendance`, checking the student is enrolled. |
+| **Photo proof on check-in** | Moderate | Add a photo field to the check-in form (`<input type="file" accept="image/*" capture="user">` opens the phone camera or the photo library). Reuse `handle_image_upload()` to store it — on S3, so every instance behind the load balancer can show it — add a `photo_url` column to `attendance`, and show the photo on the lecturer's live roster. Bonus: keep the bucket private and show photos through time-limited (pre-signed) links. |
 | **Absence with valid reason (MC)** | Moderate | Students submit a reason (and optionally a medical certificate photo, uploaded with the existing `handle_image_upload()` helper) for an Absent session; the lecturer approves it and it shows as **Excused**. New `absence_requests` table. |
 | **Edit user** | Easy | An `admin/user_edit.php` page so an admin can correct a student's name, Student ID or faculty without deleting the account. |
 | **Bulk-create students from CSV** | Moderate | Upload a CSV (name, email, Student ID, faculty, course codes) to create many student accounts and enrolments at once. |
@@ -136,7 +145,7 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 
 | Path | Purpose |
 |---|---|
-| `schema.sql` | Creates the database, all tables (`users`, `courses`, `enrolments`, `class_sessions`, `attendance`, `feedback`, `contact_messages`, `sessions`) and seed data |
+| `schema.sql` | Creates the database, all tables (`users`, `courses`, `semesters`, `enrolments`, `class_sessions`, `attendance`, `feedback`, `contact_messages`, `sessions`) and seed data |
 | `config.php` | Database connection — reads `DB_HOST`/`DB_USER`/`DB_PASS`/`DB_NAME` (environment or `.env`), plus S3 photo storage config |
 | `healthz.php` | ALB health check target — `200` if the DB connection works, `500` otherwise |
 | `auth.php` | Database-backed PHP sessions + helpers: `current_user_id()`, `require_login()`, `require_admin()`, `require_lecturer()` |

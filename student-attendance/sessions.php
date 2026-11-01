@@ -6,23 +6,29 @@ require_lecturer();
 
 $uid = current_user_id();
 $courseId = (int)($_GET['course_id'] ?? 0);
+$semesters = semester_options($conn);
+$semester = selected_semester($conn, $semesters);
+$semesterId = (int)($semester['id'] ?? 0);
+$semesterStart = $semester['start_date'] ?? '1970-01-01';
+$semesterEnd = $semester ? semester_end_date($semester) : '1970-01-01';
 $flashError = $_SESSION['flash_error'] ?? null;
-unset($_SESSION['flash_error']);
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+unset($_SESSION['flash_error'], $_SESSION['flash_success']);
 
 $sql = '
     SELECT s.*, c.code, c.name AS course_name,
            (SELECT COUNT(*) FROM attendance a WHERE a.session_id = s.id) AS checked_in,
-           (SELECT COUNT(*) FROM enrolments e WHERE e.course_id = s.course_id) AS enrolled
+           (SELECT COUNT(*) FROM enrolments e WHERE e.course_id = s.course_id AND e.semester_id = ' . semester_id_sql('s.session_date') . ') AS enrolled
     FROM class_sessions s
     JOIN courses c ON c.id = s.course_id
-    WHERE c.lecturer_id = ?
+    WHERE c.lecturer_id = ? AND s.session_date BETWEEN ? AND ?
 ';
 if ($courseId > 0) {
     $stmt = $conn->prepare($sql . ' AND s.course_id = ? ORDER BY s.session_date DESC, s.start_time DESC');
-    $stmt->bind_param('ii', $uid, $courseId);
+    $stmt->bind_param('issi', $uid, $semesterStart, $semesterEnd, $courseId);
 } else {
     $stmt = $conn->prepare($sql . ' ORDER BY s.session_date DESC, s.start_time DESC');
-    $stmt->bind_param('i', $uid);
+    $stmt->bind_param('iss', $uid, $semesterStart, $semesterEnd);
 }
 $stmt->execute();
 $sessions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -47,8 +53,16 @@ require 'partials/header.php';
 </div>
 </div>
 <?php if ($flashError): ?><p class="alert alert-error"><?= htmlspecialchars($flashError) ?></p><?php endif; ?>
+<?php if ($flashSuccess): ?><p class="alert alert-success"><?= htmlspecialchars($flashSuccess) ?></p><?php endif; ?>
 
 <form method="get" class="filter-bar">
+<label>Semester
+<select name="semester_id" onchange="this.form.submit()">
+<?php foreach ($semesters as $sm): ?>
+<option value="<?= (int)$sm['id'] ?>" <?= (int)$sm['id'] === $semesterId ? 'selected' : '' ?>><?= htmlspecialchars(semester_label($sm)) ?></option>
+<?php endforeach; ?>
+</select>
+</label>
 <label>Course
 <select name="course_id" onchange="this.form.submit()">
 <option value="0">All my courses</option>
@@ -63,7 +77,7 @@ require 'partials/header.php';
 <?php if (empty($sessions)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128197;</div>
-<p>No sessions scheduled yet.</p>
+<p>No sessions scheduled for this semester yet.</p>
 </div>
 <?php else: ?>
 <table>

@@ -13,6 +13,7 @@ $form = [
     'end_time'     => '',
     'venue'        => '',
     'class_type'   => 'Lecture',
+    'weeks'        => 1,
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -22,7 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $end_time     = $_POST['end_time'] ?? '';
     $venue        = trim($_POST['venue'] ?? '');
     $class_type   = $_POST['class_type'] ?? '';
-    $form = compact('course_id', 'session_date', 'start_time', 'end_time', 'venue', 'class_type');
+    $weeks        = max(1, min(14, (int)($_POST['weeks'] ?? 1)));
+    $form = compact('course_id', 'session_date', 'start_time', 'end_time', 'venue', 'class_type', 'weeks');
+    $semester     = $session_date !== '' ? semester_for_date($conn, $session_date) : null;
 
     if ($session_date === '' || $start_time === '' || $end_time === '' || $venue === '') {
         $error = 'All fields are required.';
@@ -34,13 +37,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Session date cannot be in the past.';
     } elseif ($end_time <= $start_time) {
         $error = 'End time must be after the start time.';
+    } elseif (!$semester) {
+        $error = 'That date is not within any semester.';
     } else {
+        // Repeat on the same weekday for the chosen number of weeks, stopping
+        // at the end of the semester.
+        $lastDay = semester_end_date($semester);
+        $conn->begin_transaction();
         $stmt = $conn->prepare('INSERT INTO class_sessions (course_id, session_date, start_time, end_time, venue, class_type) VALUES (?, ?, ?, ?, ?, ?)');
-        $stmt->bind_param('isssss', $course_id, $session_date, $start_time, $end_time, $venue, $class_type);
-        $stmt->execute();
-        $newId = $stmt->insert_id;
+        $created = 0;
+        for ($i = 0; $i < $weeks; $i++) {
+            $date = date('Y-m-d', strtotime($session_date . ' +' . ($i * 7) . ' days'));
+            if ($date > $lastDay) {
+                break;
+            }
+            $stmt->bind_param('isssss', $course_id, $date, $start_time, $end_time, $venue, $class_type);
+            $stmt->execute();
+            $newId = $stmt->insert_id;
+            $created++;
+        }
         $stmt->close();
-        header('Location: session_view.php?id=' . $newId);
+        $conn->commit();
+
+        if ($created === 1) {
+            header('Location: session_view.php?id=' . $newId);
+        } else {
+            $_SESSION['flash_success'] = "Scheduled $created weekly sessions" . ($created < $weeks ? ' (stopped at the end of ' . semester_label($semester) . ')' : '') . '.';
+            header('Location: sessions.php?semester_id=' . (int)$semester['id'] . '&course_id=' . $course_id);
+        }
         exit;
     }
 }
@@ -79,6 +103,15 @@ require 'partials/header.php';
 <label>Start Time <span class="required-mark">*</span> <input type="time" name="start_time" value="<?= htmlspecialchars($form['start_time']) ?>" required></label>
 <label>End Time <span class="required-mark">*</span> <input type="time" name="end_time" value="<?= htmlspecialchars($form['end_time']) ?>" required></label>
 <label>Venue <span class="required-mark">*</span> <input type="text" name="venue" placeholder="e.g. Lecture Hall DK A" value="<?= htmlspecialchars($form['venue']) ?>" required></label>
+<label>Repeat Weekly <span class="required-mark">*</span>
+<select name="weeks">
+<option value="1" <?= (int)$form['weeks'] === 1 ? 'selected' : '' ?>>Just this date</option>
+<?php for ($w = 2; $w <= 14; $w++): ?>
+<option value="<?= $w ?>" <?= (int)$form['weeks'] === $w ? 'selected' : '' ?>>Every week for <?= $w ?> weeks</option>
+<?php endfor; ?>
+</select>
+</label>
+<p class="form-hint">Repeats on the same weekday and time, stopping at the end of the semester. Each session can still be edited or deleted on its own.</p>
 <button type="submit">Schedule Session</button>
 </form>
 <?php endif; ?>

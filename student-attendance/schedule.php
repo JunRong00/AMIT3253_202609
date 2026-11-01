@@ -18,7 +18,7 @@ if ($uid && current_user_is_lecturer()) {
     $stmt->bind_param('i', $uid);
     $scope = 'the courses you teach';
 } elseif ($uid && !current_user_is_admin()) {
-    $stmt = $conn->prepare($sql . ' JOIN enrolments e ON e.course_id = s.course_id AND e.user_id = ? WHERE s.session_date >= CURDATE() ORDER BY s.session_date, s.start_time');
+    $stmt = $conn->prepare($sql . ' JOIN enrolments e ON e.course_id = s.course_id AND e.user_id = ? AND e.semester_id = ' . semester_id_sql('s.session_date') . ' WHERE s.session_date >= CURDATE() ORDER BY s.session_date, s.start_time');
     $stmt->bind_param('i', $uid);
     $scope = 'the courses you are enrolled in';
 } else {

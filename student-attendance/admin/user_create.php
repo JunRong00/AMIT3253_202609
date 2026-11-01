@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password     = $_POST['password'] ?? '';
     $confirm      = $_POST['confirm_password'] ?? '';
     $courseIds    = array_map('intval', (array)($_POST['course_ids'] ?? []));
+    $semesterId   = (int)($_POST['semester_id'] ?? 0);
     $needsProfile = $account_type !== 'admin';
 
     if (!isset($accountTypes[$account_type])) {
@@ -53,12 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newId = $stmt->insert_id;
             $stmt->close();
 
-            // Students can be enrolled in their courses straight away;
-            // more can be added later from the Enrolments page.
-            if ($account_type === 'student') {
-                $stmt = $conn->prepare('INSERT IGNORE INTO enrolments (user_id, course_id) SELECT ?, id FROM courses WHERE id = ?');
+            // Students can be enrolled in their courses for a semester
+            // straight away; more can be added later from Enrolments.
+            if ($account_type === 'student' && $semesterId > 0) {
+                $stmt = $conn->prepare('INSERT IGNORE INTO enrolments (user_id, course_id, semester_id) SELECT ?, c.id, s.id FROM courses c JOIN semesters s ON s.id = ? WHERE c.id = ?');
                 foreach ($courseIds as $courseId) {
-                    $stmt->bind_param('ii', $newId, $courseId);
+                    $stmt->bind_param('iii', $newId, $semesterId, $courseId);
                     $stmt->execute();
                 }
                 $stmt->close();
@@ -73,6 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $courses = $conn->query('SELECT id, code, name FROM courses ORDER BY code')->fetch_all(MYSQLI_ASSOC);
+$semesters = $conn->query('SELECT * FROM semesters ORDER BY start_date')->fetch_all(MYSQLI_ASSOC);
+$selectedSemester = (int)($_POST['semester_id'] ?? (default_semester($conn)['id'] ?? 0));
 $selectedType = $_POST['account_type'] ?? 'student';
 $selectedCourses = array_map('intval', (array)($_POST['course_ids'] ?? []));
 
@@ -107,6 +110,13 @@ password from My Account.</p>
 </label>
 </div>
 <div id="course-fields">
+<label>Semester
+<select name="semester_id">
+<?php foreach ($semesters as $s): ?>
+<option value="<?= (int)$s['id'] ?>" <?= (int)$s['id'] === $selectedSemester ? 'selected' : '' ?>><?= htmlspecialchars(semester_label($s)) ?></option>
+<?php endforeach; ?>
+</select>
+</label>
 <label>Enrol in Courses
 <select name="course_ids[]" multiple size="<?= min(6, max(3, count($courses))) ?>">
 <?php foreach ($courses as $c): ?>

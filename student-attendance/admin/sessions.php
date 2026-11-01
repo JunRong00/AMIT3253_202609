@@ -5,20 +5,26 @@ require '../helpers.php';
 require_admin();
 
 $courseId = (int)($_GET['course_id'] ?? 0);
+$semesters = semester_options($conn);
+$semester = selected_semester($conn, $semesters);
+$semesterId = (int)($semester['id'] ?? 0);
+$semesterStart = $semester['start_date'] ?? '1970-01-01';
+$semesterEnd = $semester ? semester_end_date($semester) : '1970-01-01';
 
 $sql = '
     SELECT s.*, c.code, c.name AS course_name, u.name AS lecturer_name,
            (SELECT COUNT(*) FROM attendance a WHERE a.session_id = s.id) AS checked_in,
-           (SELECT COUNT(*) FROM enrolments e WHERE e.course_id = s.course_id) AS enrolled
+           (SELECT COUNT(*) FROM enrolments e WHERE e.course_id = s.course_id AND e.semester_id = ' . semester_id_sql('s.session_date') . ') AS enrolled
     FROM class_sessions s
     JOIN courses c ON c.id = s.course_id
     LEFT JOIN users u ON u.id = c.lecturer_id
 ';
 if ($courseId > 0) {
-    $stmt = $conn->prepare($sql . ' WHERE s.course_id = ? ORDER BY s.session_date DESC, s.start_time DESC');
-    $stmt->bind_param('i', $courseId);
+    $stmt = $conn->prepare($sql . ' WHERE s.session_date BETWEEN ? AND ? AND s.course_id = ? ORDER BY s.session_date DESC, s.start_time DESC');
+    $stmt->bind_param('ssi', $semesterStart, $semesterEnd, $courseId);
 } else {
-    $stmt = $conn->prepare($sql . ' ORDER BY s.session_date DESC, s.start_time DESC');
+    $stmt = $conn->prepare($sql . ' WHERE s.session_date BETWEEN ? AND ? ORDER BY s.session_date DESC, s.start_time DESC');
+    $stmt->bind_param('ss', $semesterStart, $semesterEnd);
 }
 $stmt->execute();
 $sessions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -33,6 +39,13 @@ require 'partials/header.php';
 <p>Every class session across all courses. Lecturers schedule and open their own sessions from the public site.</p>
 
 <form method="get" class="filter-bar">
+<label>Semester
+<select name="semester_id" onchange="this.form.submit()">
+<?php foreach ($semesters as $sm): ?>
+<option value="<?= (int)$sm['id'] ?>" <?= (int)$sm['id'] === $semesterId ? 'selected' : '' ?>><?= htmlspecialchars(semester_label($sm)) ?></option>
+<?php endforeach; ?>
+</select>
+</label>
 <label>Course
 <select name="course_id" onchange="this.form.submit()">
 <option value="0">All courses</option>

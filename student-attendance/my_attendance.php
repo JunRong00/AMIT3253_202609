@@ -5,9 +5,15 @@ require 'helpers.php';
 require_login();
 
 $uid = current_user_id();
+$semesters = semester_options($conn);
+$semester = selected_semester($conn, $semesters);
+$semesterId = (int)($semester['id'] ?? 0);
+$semesterStart = $semester['start_date'] ?? '1970-01-01';
+$semesterEnd = $semester ? semester_end_date($semester) : '1970-01-01';
 
-// Every session so far (today included) for the courses this student is
-// enrolled in, with their check-in if any. A past session with no check-in
+// Every session so far (today included) in the chosen semester for the
+// courses this student is enrolled in that semester, with their check-in if
+// any. A past session with no check-in
 // counts as Absent; today's session that hasn't ended (or is still open for
 // check-in) is "Pending".
 $stmt = $conn->prepare('
@@ -15,12 +21,12 @@ $stmt = $conn->prepare('
            c.code, c.name AS course_name, a.status, a.checked_in_at
     FROM class_sessions s
     JOIN courses c ON c.id = s.course_id
-    JOIN enrolments e ON e.course_id = s.course_id AND e.user_id = ?
+    JOIN enrolments e ON e.course_id = s.course_id AND e.user_id = ? AND e.semester_id = ?
     LEFT JOIN attendance a ON a.session_id = s.id AND a.user_id = ?
-    WHERE s.session_date <= CURDATE()
+    WHERE s.session_date <= CURDATE() AND s.session_date BETWEEN ? AND ?
     ORDER BY s.session_date DESC, s.start_time DESC
 ');
-$stmt->bind_param('ii', $uid, $uid);
+$stmt->bind_param('iiiss', $uid, $semesterId, $uid, $semesterStart, $semesterEnd);
 $stmt->execute();
 $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
@@ -38,8 +44,21 @@ require 'partials/header.php';
 ?>
 <div class="page-header">
 <h1>My Attendance</h1>
-<p>Every class session so far for the courses you are enrolled in.</p>
+<p>Every class session so far for the courses you are enrolled in, by semester.</p>
 </div>
+
+<?php if ($semester): ?>
+<form method="get" class="filter-bar">
+<label>Semester
+<select name="semester_id" onchange="this.form.submit()">
+<?php foreach ($semesters as $sm): ?>
+<option value="<?= (int)$sm['id'] ?>" <?= (int)$sm['id'] === $semesterId ? 'selected' : '' ?>><?= htmlspecialchars(semester_label($sm)) ?></option>
+<?php endforeach; ?>
+</select>
+</label>
+<noscript><button type="submit">Show</button></noscript>
+</form>
+<?php endif; ?>
 
 <?php if (empty($rows)): ?>
 <div class="empty-state">

@@ -13,23 +13,26 @@ if (!$session) {
 $flashError = $_SESSION['flash_error'] ?? null;
 unset($_SESSION['flash_error']);
 
+// Students enrolled in this course for the semester this session falls in.
+$semesterId = (int)(semester_for_date($conn, $session['session_date'])['id'] ?? 0);
+
 // Enrolled students who haven't checked in yet.
 $stmt = $conn->prepare('
     SELECT u.id_number, u.name, u.email
     FROM enrolments e
     JOIN users u ON u.id = e.user_id
     LEFT JOIN attendance a ON a.session_id = ? AND a.user_id = e.user_id
-    WHERE e.course_id = ? AND a.id IS NULL
+    WHERE e.course_id = ? AND e.semester_id = ? AND a.id IS NULL
     ORDER BY u.name
 ');
 $courseId = (int)$session['course_id'];
-$stmt->bind_param('ii', $id, $courseId);
+$stmt->bind_param('iii', $id, $courseId, $semesterId);
 $stmt->execute();
 $notCheckedIn = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-$stmt = $conn->prepare('SELECT COUNT(*) AS c FROM enrolments WHERE course_id = ?');
-$stmt->bind_param('i', $courseId);
+$stmt = $conn->prepare('SELECT COUNT(*) AS c FROM enrolments WHERE course_id = ? AND semester_id = ?');
+$stmt->bind_param('ii', $courseId, $semesterId);
 $stmt->execute();
 $enrolled = (int)$stmt->get_result()->fetch_assoc()['c'];
 $stmt->close();

@@ -26,12 +26,13 @@ $stmt = $conn->prepare('
     SELECT u.id AS user_id, u.id_number, u.name, u.email, a.id AS attendance_id, a.status, a.checked_in_at
     FROM users u
     LEFT JOIN attendance a ON a.user_id = u.id AND a.session_id = ?
-    WHERE u.id IN (SELECT user_id FROM enrolments WHERE course_id = ?)
+    WHERE u.id IN (SELECT user_id FROM enrolments WHERE course_id = ? AND semester_id = ?)
        OR a.id IS NOT NULL
     ORDER BY u.name
 ');
 $courseId = (int)$session['course_id'];
-$stmt->bind_param('ii', $id, $courseId);
+$semesterId = (int)(semester_for_date($conn, $session['session_date'])['id'] ?? 0);
+$stmt->bind_param('iii', $id, $courseId, $semesterId);
 $stmt->execute();
 $roster = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();

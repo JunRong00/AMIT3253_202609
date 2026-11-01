@@ -26,6 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please choose a valid class type.';
     } elseif ($end_time <= $start_time) {
         $error = 'End time must be after the start time.';
+    } elseif (!semester_for_date($conn, $session_date)) {
+        $error = 'That date is not within any semester.';
     } else {
         $stmt = $conn->prepare('UPDATE class_sessions SET session_date=?, start_time=?, end_time=?, venue=?, class_type=? WHERE id=?');
         $stmt->bind_param('sssssi', $session_date, $start_time, $end_time, $venue, $class_type, $id);

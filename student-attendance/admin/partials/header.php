@@ -21,6 +21,7 @@
 <a class="brand" href="sessions.php"><img src="../assets/tarumt-logo.png" alt="TAR UMT" class="brand-logo">Admin &middot; Student Attendance System</a>
 <div class="nav-links">
 <a href="sessions.php" class="<?= $currentPage === 'sessions.php' ? 'active' : '' ?>">Sessions</a>
+<a href="semesters.php" class="<?= $currentPage === 'semesters.php' ? 'active' : '' ?>">Semesters</a>
 <a href="courses.php" class="<?= $currentPage === 'courses.php' ? 'active' : '' ?>">Courses</a>
 <a href="enrolments.php" class="<?= $currentPage === 'enrolments.php' ? 'active' : '' ?>">Enrolments</a>
 <a href="feedback.php" class="<?= $currentPage === 'feedback.php' ? 'active' : '' ?>">Feedback</a>

@@ -17,7 +17,7 @@ CREATE TABLE users (
 -- Seed accounts (change these passwords in any real deployment):
 --   admin@example.com    / admin123     (admin)
 --   lecturer@example.com / lecturer123  (lecturer - teaches the seeded courses)
---   student@example.com  / student123   (student - enrolled in two courses)
+--   student@example.com  / student123   (student - enrolled in two courses this semester)
 -- There is no public registration: an admin creates every account.
 INSERT INTO users (name, email, password_hash, id_number, faculty, date_of_birth, role, is_admin) VALUES
 ('Admin', 'admin@example.com', '$2y$10$HI3gLmyD4OGmfNLAGUIL8.eBhhKu5nzL7wTDws.6mUNO9V44kyM5q', NULL, NULL, NULL, 'student', 1),
@@ -39,17 +39,38 @@ INSERT INTO courses (code, name, lecturer_id, image_url) VALUES
 ('AACS2063', 'Data Structures and Algorithms', 2, '/uploads/sample-algorithms.png'),
 ('AACS3064', 'Software Engineering', NULL, '/uploads/sample-software-engineering.jpg');
 
+-- A year has two long semesters (14 weeks) and one short semester (7 weeks).
+-- start_date is the Monday of week 1. The seeded semesters are relative to the
+-- day this schema is imported, so the demo is always mid-semester (week 6).
+CREATE TABLE semesters (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  code CHAR(6) NOT NULL UNIQUE,
+  name VARCHAR(100) NOT NULL,
+  start_date DATE NOT NULL,
+  weeks TINYINT NOT NULL
+);
+
+SET @sem_start = DATE_SUB(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 5 WEEK);
+INSERT INTO semesters (code, name, start_date, weeks) VALUES
+(DATE_FORMAT(@sem_start, '%Y%m'), 'Long Semester', @sem_start, 14),
+(DATE_FORMAT(DATE_ADD(@sem_start, INTERVAL 16 WEEK), '%Y%m'), 'Short Semester', DATE_ADD(@sem_start, INTERVAL 16 WEEK), 7);
+
+-- Students are enrolled (by the admin) per course per semester. A session
+-- counts for the students enrolled in its course for the semester its date
+-- falls in.
 CREATE TABLE enrolments (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   course_id INT NOT NULL,
+  semester_id INT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uniq_enrolment (user_id, course_id),
+  UNIQUE KEY uniq_enrolment (user_id, course_id, semester_id),
   FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (course_id) REFERENCES courses(id)
+  FOREIGN KEY (course_id) REFERENCES courses(id),
+  FOREIGN KEY (semester_id) REFERENCES semesters(id)
 );
 
-INSERT INTO enrolments (user_id, course_id) VALUES (3, 1), (3, 2);
+INSERT INTO enrolments (user_id, course_id, semester_id) VALUES (3, 1, 1), (3, 2, 1);
 
 CREATE TABLE class_sessions (
   id INT AUTO_INCREMENT PRIMARY KEY,

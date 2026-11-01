@@ -15,7 +15,7 @@ if ($uid && $isLecturer) {
     $stmt = $conn->prepare('
         SELECT s.*, c.code, c.name AS course_name,
                (SELECT COUNT(*) FROM attendance a WHERE a.session_id = s.id) AS checked_in,
-               (SELECT COUNT(*) FROM enrolments e WHERE e.course_id = s.course_id) AS enrolled
+               (SELECT COUNT(*) FROM enrolments e WHERE e.course_id = s.course_id AND e.semester_id = ' . semester_id_sql('s.session_date') . ') AS enrolled
         FROM class_sessions s
         JOIN courses c ON c.id = s.course_id
         WHERE c.lecturer_id = ? AND s.session_date = CURDATE()
@@ -27,7 +27,7 @@ if ($uid && $isLecturer) {
     $stmt->close();
 
     $stmt = $conn->prepare('
-        SELECT c.*, (SELECT COUNT(*) FROM enrolments e WHERE e.course_id = c.id) AS enrolled
+        SELECT c.*, (SELECT COUNT(*) FROM enrolments e WHERE e.course_id = c.id AND e.semester_id = ' . semester_id_sql('CURDATE()') . ') AS enrolled
         FROM courses c WHERE c.lecturer_id = ? ORDER BY c.code
     ');
     $stmt->bind_param('i', $uid);
@@ -39,7 +39,7 @@ if ($uid && $isLecturer) {
         SELECT s.*, c.code, c.name AS course_name, a.status AS my_status
         FROM class_sessions s
         JOIN courses c ON c.id = s.course_id
-        JOIN enrolments e ON e.course_id = s.course_id AND e.user_id = ?
+        JOIN enrolments e ON e.course_id = s.course_id AND e.user_id = ? AND e.semester_id = ' . semester_id_sql('s.session_date') . '
         LEFT JOIN attendance a ON a.session_id = s.id AND a.user_id = ?
         WHERE s.session_date = CURDATE()
         ORDER BY s.start_time
@@ -136,7 +136,7 @@ require 'partials/header.php';
 <img class="card-thumb" src="<?= htmlspecialchars(entity_image_url($c)) ?>" alt="<?= htmlspecialchars($c['name']) ?>" loading="lazy">
 <span class="badge badge-accent"><?= htmlspecialchars($c['code']) ?></span>
 <h3><?= htmlspecialchars($c['name']) ?></h3>
-<p><?= (int)$c['enrolled'] ?> student<?= (int)$c['enrolled'] === 1 ? '' : 's' ?> enrolled</p>
+<p><?= (int)$c['enrolled'] ?> student<?= (int)$c['enrolled'] === 1 ? '' : 's' ?> enrolled this semester</p>
 <a class="btn" href="session_create.php?course_id=<?= (int)$c['id'] ?>">+ Schedule Session</a>
 </div>
 <?php endforeach; ?>

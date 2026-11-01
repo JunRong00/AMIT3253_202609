@@ -407,3 +407,64 @@ function lecturer_session($conn, $lecturerId, $sessionId) {
     $stmt->close();
     return $session;
 }
+
+function monday_of($date) {
+    $ts = strtotime($date);
+    return date('Y-m-d', strtotime('-' . (date('N', $ts) - 1) . ' days', $ts));
+}
+
+// Last day (Sunday) of a semester.
+function semester_end_date($semester) {
+    return date('Y-m-d', strtotime($semester['start_date'] . ' +' . ((int)$semester['weeks'] * 7 - 1) . ' days'));
+}
+
+function semester_label($semester) {
+    return $semester['code'] . ' ' . $semester['name'];
+}
+
+// The semester $date falls in, or null if it's between semesters.
+function semester_for_date($conn, $date) {
+    $stmt = $conn->prepare('SELECT * FROM semesters WHERE ? BETWEEN start_date AND DATE_ADD(start_date, INTERVAL weeks * 7 - 1 DAY)');
+    $stmt->bind_param('s', $date);
+    $stmt->execute();
+    $semester = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $semester;
+}
+
+// The semester running today, or else the next one to start, or else the
+// most recent one - the sensible default for timetable pages.
+function default_semester($conn) {
+    $today = date('Y-m-d');
+    return semester_for_date($conn, $today)
+        ?? $conn->query("SELECT * FROM semesters WHERE start_date > CURDATE() ORDER BY start_date LIMIT 1")->fetch_assoc()
+        ?? $conn->query('SELECT * FROM semesters ORDER BY start_date DESC LIMIT 1')->fetch_assoc();
+}
+
+// Week number (1-based) of $date within $semester.
+function semester_week($semester, $date) {
+    return (int)floor((strtotime(monday_of($date)) - strtotime($semester['start_date'])) / (7 * 86400)) + 1;
+}
+
+// SQL expression for the id of the semester $dateExpr falls in (NULL if
+// none), e.g. semester_id_sql('s.session_date') inside a query about
+// class_sessions s. Enrolments are per semester, so "students enrolled for
+// this session" means enrolments with this semester_id.
+function semester_id_sql($dateExpr) {
+    return "(SELECT sm.id FROM semesters sm WHERE $dateExpr BETWEEN sm.start_date AND DATE_ADD(sm.start_date, INTERVAL sm.weeks * 7 - 1 DAY) LIMIT 1)";
+}
+
+function semester_options($conn) {
+    return $conn->query('SELECT * FROM semesters ORDER BY start_date')->fetch_all(MYSQLI_ASSOC);
+}
+
+// The semester picked in a ?semester_id= filter, or the default one.
+function selected_semester($conn, $semesters) {
+    $id = (int)($_GET['semester_id'] ?? 0);
+    foreach ($semesters as $s) {
+        if ((int)$s['id'] === $id) {
+            return $s;
+        }
+    }
+    return default_semester($conn);
+}

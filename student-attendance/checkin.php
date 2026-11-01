@@ -46,7 +46,7 @@ if (current_user_is_lecturer()) {
             $courseId = (int)$session['course_id'];
             $sessionId = (int)$session['id'];
 
-            $stmt = $conn->prepare('SELECT 1 FROM enrolments WHERE user_id = ? AND course_id = ?');
+            $stmt = $conn->prepare('SELECT 1 FROM enrolments WHERE user_id = ? AND course_id = ? AND semester_id = ' . semester_id_sql('CURDATE()'));
             $stmt->bind_param('ii', $uid, $courseId);
             $stmt->execute();
             $enrolled = (bool)$stmt->get_result()->fetch_assoc();
@@ -59,7 +59,7 @@ if (current_user_is_lecturer()) {
             $stmt->close();
 
             if (!$enrolled) {
-                $error = 'You are not enrolled in ' . $session['code'] . ' ' . $session['course_name'] . '. Ask the Academic Administration Office to enrol you.';
+                $error = 'You are not enrolled in ' . $session['code'] . ' ' . $session['course_name'] . ' for this semester. Ask the Academic Administration Office to enrol you.';
                 $conn->rollback();
             } elseif ($existing) {
                 $success = 'You have already checked in to ' . $session['code'] . ' ' . $session['course_name'] . ' (' . $existing['status'] . ').';
