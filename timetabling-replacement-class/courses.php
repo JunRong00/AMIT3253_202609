@@ -3,9 +3,9 @@ require 'config.php';
 require 'auth.php';
 require 'helpers.php';
 
-// The course catalogue for one semester: every course with classes that
-// semester, its lecturer and its regular weekly classes. Everyone sees the
-// whole catalogue; each user's own timetable is on timetable.php.
+// The courses for one semester with their lecturer and regular weekly
+// classes - a student's enrolled courses, a lecturer's own courses, or
+// every course for admins (the same rule as timetable.php).
 $semesters = $conn->query('SELECT * FROM semesters ORDER BY start_date')->fetch_all(MYSQLI_ASSOC);
 $semesterId = (int)($_GET['semester_id'] ?? 0);
 $semester = null;
@@ -17,12 +17,16 @@ foreach ($semesters as $s) {
 $semester = $semester ?? default_semester($conn);
 $semesterId = (int)($semester['id'] ?? 0);
 
+$visible = visible_course_ids($conn, $semesterId);
+// Course IDs come from the database, so they're safe to inline.
+$courseFilter = fn($column) => $visible === null ? '' : ' AND ' . $column . ' IN (' . (implode(',', array_map('intval', $visible)) ?: '0') . ')';
+
 $stmt = $conn->prepare('
     SELECT t.course_id, t.day_of_week, t.class_type, ts.start_time, ts.end_time, v.name AS venue_name
     FROM timetable_entries t
     JOIN time_slots ts ON ts.id = t.time_slot_id
     JOIN venues v ON v.id = t.venue_id
-    WHERE t.semester_id = ?
+    WHERE t.semester_id = ?' . $courseFilter('t.course_id') . '
     ORDER BY t.day_of_week, ts.start_time
 ');
 $stmt->bind_param('i', $semesterId);
@@ -38,7 +42,7 @@ foreach ($rows as $row) {
 $stmt = $conn->prepare('
     SELECT c.*, u.name AS lecturer_name
     FROM courses c LEFT JOIN users u ON u.id = c.lecturer_id
-    WHERE EXISTS (SELECT 1 FROM timetable_entries t WHERE t.course_id = c.id AND t.semester_id = ?)
+    WHERE EXISTS (SELECT 1 FROM timetable_entries t WHERE t.course_id = c.id AND t.semester_id = ?)' . $courseFilter('c.id') . '
     ORDER BY c.code
 ');
 $stmt->bind_param('i', $semesterId);
@@ -53,8 +57,9 @@ require 'partials/header.php';
 ?>
 <div class="page-header">
 <h1>Courses</h1>
-<p>The course catalogue for a semester, with each course's lecturer and regular weekly classes.
-Your own timetable is on the <a href="timetable.php<?= $semesterId ? '?semester_id=' . $semesterId : '' ?>">Timetable</a> page.</p>
+<p><?= current_user_is_admin() ? 'Every course' : (current_user_is_lecturer() ? 'The courses you teach' : 'The courses you are enrolled in') ?>
+for the chosen semester, with each course's lecturer and regular weekly classes. See them week by week on the
+<a href="timetable.php<?= $semesterId ? '?semester_id=' . $semesterId : '' ?>">Timetable</a> page.</p>
 </div>
 
 <?php if (!$semester): ?>
@@ -76,7 +81,7 @@ Your own timetable is on the <a href="timetable.php<?= $semesterId ? '?semester_
 
 <section>
 <div class="card-grid">
-<div class="card"><h3><?= count($courses) ?></h3><p>Courses offered</p></div>
+<div class="card"><h3><?= count($courses) ?></h3><p><?= current_user_is_admin() ? 'Courses offered' : 'My courses' ?></p></div>
 <div class="card"><h3><?= count($rows) ?></h3><p>Classes per week</p></div>
 <div class="card"><h3><?= (int)$venuesInUse ?></h3><p>Venues in use</p></div>
 </div>
@@ -85,7 +90,7 @@ Your own timetable is on the <a href="timetable.php<?= $semesterId ? '?semester_
 <?php if (empty($courses)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128218;</div>
-<p>No classes have been timetabled for <?= htmlspecialchars(semester_label($semester)) ?> yet.</p>
+<p>No courses for you in <?= htmlspecialchars(semester_label($semester)) ?>.</p>
 </div>
 <?php else: ?>
 <section>

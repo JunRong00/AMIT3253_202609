@@ -21,8 +21,8 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 
 **Every logged-in user**
 - Homepage: **My Courses** for the current semester (a student's enrolled courses, a lecturer's
-  own courses, or every course for admins), with search, plus a **Courses** page: the catalogue of
-  courses offered in a chosen semester, with each one's lecturer and regular weekly classes.
+  own courses, or every course for admins), with search, plus a **Courses** page: the same courses for a
+  chosen semester, with each one's lecturer and regular weekly classes.
 - Contact form and feedback page (topic + star rating), both moderated by admin.
 - **There is no public registration** — the admin creates every account.
 
