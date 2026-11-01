@@ -19,14 +19,11 @@ $stmt->close();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'profile') {
     $name          = trim($_POST['name'] ?? '');
-    $id_number     = trim($_POST['id_number'] ?? '');
-    $faculty       = trim($_POST['faculty'] ?? '');
-    $programme     = trim($_POST['programme'] ?? '');
     $date_of_birth = trim($_POST['date_of_birth'] ?? '');
 
     [$newImageUrl, $uploadError] = handle_image_upload($_FILES['image'] ?? null, $uploadDir, 'profile');
 
-    if ($name === '' || $date_of_birth === '' || $id_number === '' || $faculty === '' || $programme === '') {
+    if ($name === '' || $date_of_birth === '') {
         $profileError = 'All fields are required.';
     } elseif ($uploadError) {
         $profileError = $uploadError;
@@ -36,12 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'profile
             delete_image_file($user['image_url'], $uploadDir);
         }
 
-        $stmt = $conn->prepare('UPDATE users SET name = ?, id_number = ?, faculty = ?, programme = ?, date_of_birth = ?, image_url = ? WHERE id = ?');
-        $stmt->bind_param('ssssssi', $name, $id_number, $faculty, $programme, $date_of_birth, $image_url, $uid);
+        $stmt = $conn->prepare('UPDATE users SET name = ?, date_of_birth = ?, image_url = ? WHERE id = ?');
+        $stmt->bind_param('sssi', $name, $date_of_birth, $image_url, $uid);
         $stmt->execute();
         $stmt->close();
         $_SESSION['user_name'] = $name;
-        $user = array_merge($user, compact('name', 'id_number', 'faculty', 'programme', 'date_of_birth', 'image_url'));
+        $user = array_merge($user, compact('name', 'date_of_birth', 'image_url'));
         $profileSuccess = 'Profile updated.';
     }
 }
@@ -93,16 +90,10 @@ require 'partials/header.php';
 <label>Upload New Photo <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp"></label>
 <label>Full Name <span class="required-mark">*</span> <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" required></label>
 <label>Email <input type="email" value="<?= htmlspecialchars($user['email']) ?>" disabled></label>
-<label>Student ID <span class="required-mark">*</span> <input type="text" name="id_number" value="<?= htmlspecialchars($user['id_number'] ?? '') ?>" required></label>
-<label>Faculty <span class="required-mark">*</span>
-<select name="faculty" required>
-<option value="">-- Select Faculty / Centre --</option>
-<?php foreach (tarumt_faculties() as $f): ?>
-<option value="<?= htmlspecialchars($f) ?>" <?= ($user['faculty'] ?? '') === $f ? 'selected' : '' ?>><?= htmlspecialchars($f) ?></option>
-<?php endforeach; ?>
-</select>
-</label>
-<label>Programme <span class="required-mark">*</span> <input type="text" name="programme" placeholder="e.g. Diploma in Information Technology" value="<?= htmlspecialchars($user['programme'] ?? '') ?>" required></label>
+<label>Student ID <input type="text" value="<?= htmlspecialchars($user['id_number'] ?? '') ?>" disabled></label>
+<label>Faculty <input type="text" value="<?= htmlspecialchars($user['faculty'] ?? '') ?>" disabled></label>
+<label>Programme <input type="text" value="<?= htmlspecialchars($user['programme'] ?? '') ?>" disabled></label>
+<p class="form-hint">Student ID, faculty and programme are kept by the Registry. Contact them if any of these are wrong.</p>
 <label>Date of Birth <span class="required-mark">*</span> <input type="date" name="date_of_birth" value="<?= htmlspecialchars($user['date_of_birth'] ?? '') ?>" required></label>
 <button type="submit">Save Changes</button>
 </form>

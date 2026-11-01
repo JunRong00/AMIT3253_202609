@@ -7,11 +7,12 @@ require_login();
 $uid = current_user_id();
 
 $stmt = $conn->prepare('
-    SELECT r.semester, r.grade, r.grade_point, c.code, c.name, c.credit_hours
+    SELECT s.code AS semester_code, s.name AS semester_name, r.grade, r.grade_point, c.code, c.name, c.credit_hours
     FROM results r
     JOIN courses c ON c.id = r.course_id
+    JOIN semesters s ON s.id = r.semester_id
     WHERE r.user_id = ?
-    ORDER BY r.semester DESC, c.code
+    ORDER BY s.start_date DESC, c.code
 ');
 $stmt->bind_param('i', $uid);
 $stmt->execute();
@@ -20,7 +21,7 @@ $stmt->close();
 
 $bySemester = [];
 foreach ($rows as $row) {
-    $bySemester[$row['semester']][] = $row;
+    $bySemester[semester_label(['code' => $row['semester_code'], 'name' => $row['semester_name']])][] = $row;
 }
 
 $coursesTaken = count($rows);
@@ -50,7 +51,7 @@ require 'partials/header.php';
 <?php else: ?>
 <?php foreach ($bySemester as $semester => $results): ?>
 <section>
-<h2><?= htmlspecialchars(semester_label($semester)) ?></h2>
+<h2><?= htmlspecialchars($semester) ?></h2>
 <table>
 <tr><th>Course Code</th><th>Course</th><th>Credit Hours</th><th>Grade</th><th>Grade Point</th></tr>
 <?php foreach ($results as $r): ?>

@@ -372,11 +372,15 @@ function status_badge_class($status) {
     }
 }
 
-// Semesters are stored as YYYYMM intake codes (e.g. "202605"); shown as
-// "May 2026" to students.
-function semester_label($code) {
-    $ts = strtotime(substr($code, 0, 4) . '-' . substr($code, 4, 2) . '-01');
-    return $ts ? date('M Y', $ts) . " ($code)" : $code;
+// e.g. "202605 Short Semester" - from a semesters row (or any row with the
+// semester's code and name).
+function semester_label($semester) {
+    return $semester['code'] . ' ' . $semester['name'];
+}
+
+// Last day (Sunday) of a semester.
+function semester_end_date($semester) {
+    return date('Y-m-d', strtotime($semester['start_date'] . ' +' . ((int)$semester['weeks'] * 7 - 1) . ' days'));
 }
 
 // Expected ready date: N working days (Mon-Fri) after the request date.

@@ -22,8 +22,10 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 - "My Requests" on the homepage with expected ready date (working days only), status and the
   Registry's note; edit/cancel while Pending.
 - **Profile photo upload** on the account page (validated, stored locally or on S3 — see below),
-  plus programme, faculty and password management.
-- Register/login/logout, dark/light mode, password visibility toggle, TAR UMT faculty dropdown.
+  plus name, date of birth and password. Student ID, faculty and programme are kept by the
+  Registry and can't be changed by the student.
+- Login/logout, dark/light mode, password visibility toggle. **There is no public registration**
+  — the Registry (admin) creates every account.
 - Contact form and feedback page (topic + star rating), both moderated by admin.
 
 **Admin panel** (`admin/`, gated by `is_admin`; admins land on `admin/requests.php`)
@@ -31,6 +33,11 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   a note shown to the student.
 - Enter examination results per student (`admin/results.php`). Grades map to grade points on
   TAR UMT's scale; re-entering a course + semester corrects the result instead of duplicating it.
+- **Semesters** (`admin/semesters.php`): two long semesters (14 weeks) and one short semester
+  (7 weeks) a year, added by code (e.g. 202609) and start date. Results are entered against a
+  semester picked from this list.
+- **Create every account** (`admin/user_create.php`): students (with Student ID, faculty and
+  programme) or Registry admins. Duplicate emails and Student IDs are rejected.
 - Full CRUD for courses and document types (with photo upload).
 - Moderate feedback and view contact messages.
 - Manage user accounts: promote/demote admin access, delete an account (cascades to their
@@ -49,7 +56,7 @@ Seeded by `schema.sql`:
 | `student@example.com` | `student123` | Student |
 
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
-local demo** — they're well-known credentials once this code is shared. Students register their own accounts via the Register page.
+local demo** — they're well-known credentials once this code is shared. There is **no public registration**: the Registry (admin) creates every account from **Users → Add User**.
 
 ## Ideas for additional functions
 
@@ -61,6 +68,7 @@ app. You are welcome to come up with your own instead.
 | Idea | Effort | What it involves |
 |---|---|---|
 | **GPA and CGPA** | Easy | On `results.php`, calculate each semester's GPA (Σ grade point × credit hours ÷ Σ credit hours) and an overall CGPA. |
+| **Payment tracking** | Easy | Add a Paid / Unpaid flag to document requests that the Registry ticks when the student pays, show it on My Requests, and stop a request moving to Processing until it's paid. |
 | **Fee statement** | Moderate | A `fees` table (item, amount, due date, paid) entered by the admin, and a page where students see what they owe and have paid. |
 | **Supporting document upload** | Easy | Let students attach a file (e.g. an IC copy) to a document request using the existing `handle_image_upload()` helper (stored on S3 when configured). |
 | **Request status history** | Easy | Record every status change in a `request_history` table and show a timeline on the student's request. |
@@ -106,7 +114,7 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 
 | Path | Purpose |
 |---|---|
-| `schema.sql` | Creates the database, all tables (`users`, `courses`, `results`, `document_types`, `document_requests`, `feedback`, `contact_messages`, `sessions`) and seed data |
+| `schema.sql` | Creates the database, all tables (`users`, `courses`, `semesters`, `results`, `document_types`, `document_requests`, `feedback`, `contact_messages`, `sessions`) and seed data |
 | `config.php` | Database connection — reads `DB_HOST`/`DB_USER`/`DB_PASS`/`DB_NAME` (environment or `.env`), plus S3 photo storage config |
 | `healthz.php` | ALB health check target — `200` if the DB connection works, `500` otherwise |
 | `auth.php` | Database-backed PHP sessions + helpers: `current_user_id()`, `require_login()`, `require_admin()` |
@@ -117,7 +125,7 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 | `create.php` / `edit.php` / `delete.php` | Document request CRUD (own requests only) |
 | `request_availability.php` | JSON endpoint used to grey out documents already requested |
 | `account.php` | Profile (with photo upload) and password |
-| `register.php` / `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
+| `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
 | `about.php`, `contact.php`, `feedback.php` | Informational pages, contact form, feedback |
 | `partials/` | Shared navbar/footer, included by every page |
 | `admin/` | Admin-only pages |
@@ -210,7 +218,7 @@ needs no cookie but only checks the database connection, so it isn't a realistic
 
 ## Login is required
 
-**Every page needs a login** except `login.php` and `register.php` (and
+**Every page needs a login** except `login.php` (and
 `healthz.php`, which the load balancer calls). This is enforced in one place: the
 `PUBLIC_PAGES` check at the bottom of `auth.php`, which every page loads, so a new page you add
 is protected automatically. Logged-out visitors are redirected to the login page, and the

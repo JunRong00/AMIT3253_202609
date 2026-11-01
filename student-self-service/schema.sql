@@ -18,6 +18,7 @@ CREATE TABLE users (
 -- Seed accounts (change these passwords in any real deployment):
 --   admin@example.com   / admin123    (admin)
 --   student@example.com / student123  (student with results already entered)
+-- There is no public registration: an admin creates every account.
 INSERT INTO users (name, email, password_hash, id_number, faculty, programme, date_of_birth, is_admin) VALUES
 ('Admin', 'admin@example.com', '$2y$10$HI3gLmyD4OGmfNLAGUIL8.eBhhKu5nzL7wTDws.6mUNO9V44kyM5q', NULL, NULL, NULL, NULL, 1),
 ('Demo Student', 'student@example.com', '$2y$10$3kkHog6vhyue9Syxkx8ohe8Q6.wBphgtVxgwRB7cLPzLWBtjrC8Kq', '2409123', 'Faculty of Computing and Information Technology', 'Diploma in Information Technology', '2005-03-14', 0);
@@ -37,25 +38,41 @@ INSERT INTO courses (code, name, credit_hours) VALUES
 ('AACS2304', 'Computer Networks', 4),
 ('AMIT3253', 'Cloud Computing for Business', 3);
 
+-- A year has two long semesters (14 weeks) and one short semester (7 weeks).
+-- start_date is the Monday of week 1.
+CREATE TABLE semesters (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  code CHAR(6) NOT NULL UNIQUE,
+  name VARCHAR(100) NOT NULL,
+  start_date DATE NOT NULL,
+  weeks TINYINT NOT NULL
+);
+
+INSERT INTO semesters (code, name, start_date, weeks) VALUES
+('202601', 'Long Semester', '2026-01-19', 14),
+('202605', 'Short Semester', '2026-05-25', 7),
+('202609', 'Long Semester', '2026-09-21', 14);
+
 CREATE TABLE results (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   course_id INT NOT NULL,
-  semester CHAR(6) NOT NULL,
+  semester_id INT NOT NULL,
   grade VARCHAR(2) NOT NULL,
   grade_point DECIMAL(3,2) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uniq_result (user_id, course_id, semester),
+  UNIQUE KEY uniq_result (user_id, course_id, semester_id),
   FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (course_id) REFERENCES courses(id)
+  FOREIGN KEY (course_id) REFERENCES courses(id),
+  FOREIGN KEY (semester_id) REFERENCES semesters(id)
 );
 
-INSERT INTO results (user_id, course_id, semester, grade, grade_point) VALUES
-(2, 1, '202601', 'A-', 3.67),
-(2, 2, '202601', 'A', 4.00),
-(2, 3, '202601', 'B+', 3.33),
-(2, 4, '202605', 'A', 4.00),
-(2, 5, '202605', 'B', 3.00);
+INSERT INTO results (user_id, course_id, semester_id, grade, grade_point) VALUES
+(2, 1, 1, 'A-', 3.67),
+(2, 2, 1, 'A', 4.00),
+(2, 3, 1, 'B+', 3.33),
+(2, 4, 2, 'A', 4.00),
+(2, 5, 2, 'B', 3.00);
 
 CREATE TABLE document_types (
   id INT AUTO_INCREMENT PRIMARY KEY,

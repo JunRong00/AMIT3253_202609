@@ -28,17 +28,21 @@ if ($uid = current_user_id()) {
     $stmt->close();
 
     $stmt = $conn->prepare('
-        SELECT r.semester, r.grade, r.grade_point, c.code, c.name, c.credit_hours
+        SELECT s.code AS semester_code, s.name AS semester_name, r.grade, r.grade_point, c.code, c.name, c.credit_hours
         FROM results r
         JOIN courses c ON c.id = r.course_id
-        WHERE r.user_id = ? AND r.semester = (SELECT MAX(semester) FROM results WHERE user_id = ?)
+        JOIN semesters s ON s.id = r.semester_id
+        WHERE r.user_id = ? AND r.semester_id = (
+            SELECT r2.semester_id FROM results r2 JOIN semesters s2 ON s2.id = r2.semester_id
+            WHERE r2.user_id = ? ORDER BY s2.start_date DESC LIMIT 1
+        )
         ORDER BY c.code
     ');
     $stmt->bind_param('ii', $uid, $uid);
     $stmt->execute();
     $latestResults = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
-    $latestSemester = $latestResults[0]['semester'] ?? null;
+    $latestSemester = $latestResults ? ['code' => $latestResults[0]['semester_code'], 'name' => $latestResults[0]['semester_name']] : null;
 
     $stmt = $conn->prepare('
         SELECT dr.*, dt.name AS document_name, dt.processing_days
@@ -149,7 +153,7 @@ require 'partials/header.php';
 <section>
 <h2>My Requests</h2>
 <?php if (!current_user_id()): ?>
-<p><a href="login.php">Login</a> or <a href="register.php">register</a> to see your results and request documents.</p>
+<p><a href="login.php">Login</a> with the account given to you by the Registry to see your results and request documents.</p>
 <?php elseif (empty($myRequests)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128196;</div>

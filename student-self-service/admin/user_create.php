@@ -1,68 +1,121 @@
 <?php
 require '../config.php';
 require '../auth.php';
+require '../helpers.php';
 require_admin();
 
 $error = '';
+$accountTypes = ['student' => 'Student', 'admin' => 'Admin'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name    = trim($_POST['name'] ?? '');
-    $email   = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $confirm  = $_POST['confirm_password'] ?? '';
+    $account_type = $_POST['account_type'] ?? 'student';
+    $name         = trim($_POST['name'] ?? '');
+    $email        = trim($_POST['email'] ?? '');
+    $id_number    = trim($_POST['id_number'] ?? '');
+    $faculty      = trim($_POST['faculty'] ?? '');
+    $programme    = trim($_POST['programme'] ?? '');
+    $password     = $_POST['password'] ?? '';
+    $confirm      = $_POST['confirm_password'] ?? '';
+    $needsProfile = $account_type !== 'admin';
 
-    if ($name === '' || $email === '' || $password === '') {
+    if (!isset($accountTypes[$account_type])) {
+        $error = 'Please choose a valid account type.';
+    } elseif ($name === '' || $email === '' || $password === '') {
         $error = 'Name, email and password are required.';
+    } elseif ($needsProfile && ($id_number === '' || $faculty === '' || $programme === '')) {
+        $error = 'Student ID, faculty and programme are required for student accounts.';
     } elseif ($password !== $confirm) {
         $error = 'Passwords do not match.';
     } elseif (strlen($password) < 6) {
         $error = 'Password must be at least 6 characters.';
     } else {
-        $stmt = $conn->prepare('SELECT id FROM users WHERE email = ?');
-        $stmt->bind_param('s', $email);
+        $stmt = $conn->prepare("SELECT email FROM users WHERE email = ? OR (id_number = ? AND id_number <> '')");
+        $stmt->bind_param('ss', $email, $id_number);
         $stmt->execute();
         $exists = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
-        if ($exists) {
+        if ($exists && $exists['email'] === $email) {
             $error = 'An account with this email already exists.';
+        } elseif ($exists) {
+            $error = 'An account with this Student ID already exists.';
         } else {
             $password_hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare('INSERT INTO users (name, email, password_hash, is_admin) VALUES (?, ?, ?, 1)');
-            $stmt->bind_param('sss', $name, $email, $password_hash);
+            $is_admin = $account_type === 'admin' ? 1 : 0;
+            $id_number = $id_number === '' ? null : $id_number;
+            $faculty = $faculty === '' ? null : $faculty;
+            $programme = $programme === '' ? null : $programme;
+
+            $stmt = $conn->prepare('INSERT INTO users (name, email, password_hash, id_number, faculty, programme, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)');
+            $stmt->bind_param('ssssssi', $name, $email, $password_hash, $id_number, $faculty, $programme, $is_admin);
             $stmt->execute();
             $stmt->close();
+
+            $_SESSION['flash_success'] = $accountTypes[$account_type] . ' account created for ' . $name . '.';
             header('Location: users.php');
             exit;
         }
     }
 }
 
-$pageTitle = 'Add Admin';
+$selectedType = $_POST['account_type'] ?? 'student';
+
+$pageTitle = 'Add User';
 require 'partials/header.php';
 ?>
 <div class="form-card">
-<h1>Add Admin</h1>
-<p>Creates a new account that already has admin access — no self-registration or
-promotion needed.</p>
+<h1>Add User</h1>
+<p>Student and Registry admin accounts are all created here &mdash; there is no public registration.
+Give the new user their email and password so they can log in, and ask them to change the
+password from My Account.</p>
 <?php if ($error): ?><p class="alert alert-error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 <form method="post">
-<label>Full Name <input type="text" name="name" value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required></label>
-<label>Email <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required></label>
-<label>Password
+<label>Account Type
+<select name="account_type" id="account-type">
+<?php foreach ($accountTypes as $value => $label): ?>
+<option value="<?= $value ?>" <?= $selectedType === $value ? 'selected' : '' ?>><?= $label ?></option>
+<?php endforeach; ?>
+</select>
+</label>
+<label>Full Name <span class="required-mark">*</span> <input type="text" name="name" value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required></label>
+<label>Email <span class="required-mark">*</span> <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required></label>
+<div id="profile-fields">
+<label>Student ID <span class="required-mark">*</span> <input type="text" name="id_number" value="<?= htmlspecialchars($_POST['id_number'] ?? '') ?>"></label>
+<label>Faculty <span class="required-mark">*</span>
+<select name="faculty">
+<option value="">-- Select Faculty / Centre --</option>
+<?php foreach (tarumt_faculties() as $f): ?>
+<option value="<?= htmlspecialchars($f) ?>" <?= ($_POST['faculty'] ?? '') === $f ? 'selected' : '' ?>><?= htmlspecialchars($f) ?></option>
+<?php endforeach; ?>
+</select>
+</label>
+<label>Programme <span class="required-mark">*</span> <input type="text" name="programme" placeholder="e.g. Diploma in Information Technology" value="<?= htmlspecialchars($_POST['programme'] ?? '') ?>"></label>
+</div>
+<label>Password <span class="required-mark">*</span>
 <div class="password-field">
 <input type="password" name="password" required>
 <button type="button" class="password-toggle" tabindex="-1" aria-label="Show password"></button>
 </div>
 </label>
-<label>Confirm Password
+<label>Confirm Password <span class="required-mark">*</span>
 <div class="password-field">
 <input type="password" name="confirm_password" required>
 <button type="button" class="password-toggle" tabindex="-1" aria-label="Show password"></button>
 </div>
 </label>
-<button type="submit">Create Admin Account</button>
+<button type="submit">Create Account</button>
 </form>
+<script>
+(function () {
+    var type = document.getElementById('account-type');
+    var profile = document.getElementById('profile-fields');
+    function refresh() {
+        profile.style.display = type.value === 'admin' ? 'none' : '';
+    }
+    type.addEventListener('change', refresh);
+    refresh();
+})();
+</script>
 <p><a class="btn btn-secondary btn-small" href="users.php">Back to users</a></p>
 </div>
 <?php require 'partials/footer.php'; ?>

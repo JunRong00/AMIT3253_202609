@@ -23,6 +23,7 @@
 <a href="requests.php" class="<?= $currentPage === 'requests.php' ? 'active' : '' ?>">Requests</a>
 <a href="results.php" class="<?= $currentPage === 'results.php' ? 'active' : '' ?>">Results</a>
 <a href="courses.php" class="<?= $currentPage === 'courses.php' ? 'active' : '' ?>">Courses</a>
+<a href="semesters.php" class="<?= $currentPage === 'semesters.php' ? 'active' : '' ?>">Semesters</a>
 <a href="document_types.php" class="<?= $currentPage === 'document_types.php' ? 'active' : '' ?>">Documents</a>
 <a href="feedback.php" class="<?= $currentPage === 'feedback.php' ? 'active' : '' ?>">Feedback</a>
 <a href="messages.php" class="<?= $currentPage === 'messages.php' ? 'active' : '' ?>">Messages</a>
