@@ -164,7 +164,8 @@ require 'partials/header.php';
 <label>Week
 <select name="week" onchange="this.form.submit()">
 <?php for ($w = 1; $w <= $totalWeeks; $w++): ?>
-<option value="<?= $w ?>" <?= $w === $week ? 'selected' : '' ?>>Week <?= $w ?> (<?= htmlspecialchars(date('d M', strtotime($semester['start_date'] . ' +' . (($w - 1) * 7) . ' days'))) ?>)</option>
+<?php $weekStart = strtotime($semester['start_date'] . ' +' . (($w - 1) * 7) . ' days'); ?>
+<option value="<?= $w ?>" <?= $w === $week ? 'selected' : '' ?>>Week <?= $w ?> (<?= date('d M', $weekStart) ?> &ndash; <?= date('d M', strtotime('+6 days', $weekStart)) ?>)</option>
 <?php endfor; ?>
 </select>
 </label>
