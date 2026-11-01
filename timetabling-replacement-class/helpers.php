@@ -479,6 +479,33 @@ function busy_venue_ids($conn, $date, $slotId, $excludeReplacementId = 0) {
     return $ids;
 }
 
+// Every class actually taking place on $date during $slotId: regular weekly
+// classes (minus any replaced by an approved replacement that day) plus
+// Pending/Approved replacement classes. $excludeReplacementId leaves out the
+// request being edited, and $skipCourseId leaves out that course's own
+// regular class (the one being replaced). Returns rows of id, code,
+// class_type and lecturer_id.
+function classes_at($conn, $date, $slotId, $excludeReplacementId = 0, $skipCourseId = 0) {
+    $dow = day_of_week($date);
+    $semesterId = (int)(semester_for_date($conn, $date)['id'] ?? 0);
+    $stmt = $conn->prepare("
+        SELECT c.id, c.code, t.class_type, c.lecturer_id
+        FROM timetable_entries t JOIN courses c ON c.id = t.course_id
+        WHERE t.semester_id = ? AND t.day_of_week = ? AND t.time_slot_id = ? AND t.course_id != ?
+          AND NOT EXISTS (SELECT 1 FROM replacement_classes r2
+                          WHERE r2.course_id = t.course_id AND r2.original_date = ? AND r2.status = 'Approved')
+        UNION ALL
+        SELECT c.id, c.code, r.class_type, c.lecturer_id
+        FROM replacement_classes r JOIN courses c ON c.id = r.course_id
+        WHERE r.replacement_date = ? AND r.time_slot_id = ? AND r.status IN ('Pending', 'Approved') AND r.id != ?
+    ");
+    $stmt->bind_param('iiiissii', $semesterId, $dow, $slotId, $skipCourseId, $date, $date, $slotId, $excludeReplacementId);
+    $stmt->execute();
+    $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $rows;
+}
+
 // Validates a replacement class request (shared by create.php and edit.php).
 // Returns an error message, or '' if the request is valid. Must be called
 // inside a transaction that has already locked the venue row.
@@ -534,6 +561,45 @@ function replacement_error($conn, $courseId, $originalDate, $replacementDate, $s
 
     if (in_array($venueId, busy_venue_ids($conn, $replacementDate, $slotId, $excludeId), true)) {
         return 'That venue is already in use at this time. Please choose another venue or slot.';
+    }
+
+    $others = classes_at($conn, $replacementDate, $slotId, $excludeId, $replacementDate === $originalDate ? $courseId : 0);
+
+    // Lecturer clash: the course's lecturer already teaches something then.
+    $stmt = $conn->prepare('SELECT lecturer_id FROM courses WHERE id = ?');
+    $stmt->bind_param('i', $courseId);
+    $stmt->execute();
+    $lecturerId = (int)($stmt->get_result()->fetch_assoc()['lecturer_id'] ?? 0);
+    $stmt->close();
+    foreach ($others as $other) {
+        if ($lecturerId && (int)$other['lecturer_id'] === $lecturerId) {
+            return 'The lecturer already teaches ' . $other['code'] . ' (' . $other['class_type'] . ') at this time. Please choose another slot or date.';
+        }
+    }
+
+    // Student clash: students enrolled in this course this semester who are
+    // also enrolled in a course that has a class then.
+    $otherIds = array_unique(array_map(fn($o) => (int)$o['id'], $others));
+    if ($otherIds) {
+        $stmt = $conn->prepare('
+            SELECT c.code, COUNT(*) AS students
+            FROM enrolments e1
+            JOIN enrolments e2 ON e2.user_id = e1.user_id AND e2.semester_id = e1.semester_id
+            JOIN courses c ON c.id = e2.course_id
+            WHERE e1.course_id = ? AND e1.semester_id = ? AND e2.course_id IN (' . implode(',', $otherIds) . ')
+            GROUP BY c.code
+            ORDER BY students DESC
+            LIMIT 1
+        ');
+        $stmt->bind_param('ii', $courseId, $semesterId);
+        $stmt->execute();
+        $clash = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if ($clash) {
+            $n = (int)$clash['students'];
+            return $n . ' enrolled student' . ($n === 1 ? '' : 's') . ' already ' . ($n === 1 ? 'has ' : 'have ') . $clash['code']
+                . ' at this time. Please choose another slot or date.';
+        }
     }
     return '';
 }

@@ -51,6 +51,10 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 - **You can't even select a busy venue.** The venue dropdown greys out venues already in use for
   the chosen date and slot (a fetch to **`venue_availability.php`**), and slots that have already
   started today are greyed out too. The server re-checks everything on submit.
+- **Time clashes are rejected too**: the request fails if the lecturer already teaches another
+  class at that date and slot, or if any student enrolled in the course already has another
+  class then (the message says how many students and which course). A regular class that has
+  itself been replaced that day doesn't count.
 - The original date must be a day the course actually has a regular class that semester; the
   replacement must be in the **same semester**, Monday–Saturday, not on a public holiday, and
   not in the past.
@@ -97,7 +101,7 @@ app. You are welcome to come up with your own instead.
 | Idea | Effort | What it involves |
 |---|---|---|
 | **Copy timetable to a new semester** | Easy | A button on `admin/timetable.php` that copies every class from one semester into another, so the admin doesn't re-enter them. |
-| **Lecturer clash check** | Easy | When a lecturer requests a replacement, also reject it if they already teach another class in the same date and slot. Extends `replacement_error()` in `helpers.php`. |
+| **Warn about clashes before submitting** | Easy | Lecturer and student clashes are only checked when the form is submitted. Extend `venue_availability.php` to also return the time slots that would clash, and grey them out in the form like busy venues. |
 | **Cancel a class without replacement** | Easy | Let a lecturer cancel a single class (date + reason); show it struck through on the timetable. New `cancelled_classes` table. |
 | **Venue capacity check** | Easy | Add an expected class size to courses and grey out venues whose `capacity` is too small. |
 | **Printable / CSV timetable** | Easy | A button on `timetable.php` that downloads the week's classes as a CSV file. |
