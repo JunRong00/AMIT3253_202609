@@ -11,7 +11,7 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 *Lecturer's session page — the check-in code to project in class and a live list of who has checked in.*
 
 ![My Attendance](screenshots/my-attendance.jpg)
-*My Attendance — every session so far marked Present, Late or Absent.*
+*My Attendance — every session so far in the chosen semester, marked Present, Late or Absent.*
 
 ## Features
 
