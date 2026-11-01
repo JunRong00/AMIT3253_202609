@@ -47,7 +47,8 @@ require 'partials/header.php';
 <div class="page-header-top">
 <div>
 <h1>My Sessions</h1>
-<p>Every class session for the courses you teach. Open a session to let students check in.</p>
+<p>Every class session for the courses you teach. The Academic Administration Office sets up the regular weekly classes;
+you can add extra or one-off sessions, and open check-in from each session.</p>
 </div>
 <a class="btn" href="session_create.php<?= $courseId ? '?course_id=' . $courseId : '' ?>">+ Schedule Session</a>
 </div>

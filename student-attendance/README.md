@@ -41,9 +41,9 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 - "Today's Sessions" and "My Courses" on the homepage; **`sessions.php`** lists every session
   for the courses they teach, filtered by semester and course. **My Courses** shows only the
   courses they teach.
-- Schedule, edit and delete sessions (date, start/end time, venue, class type). **Repeat weekly**
-  schedules the same class for up to 14 weeks in one go, stopping at the end of the semester.
-  A session students have already checked in to can't be deleted.
+- The admin sets up each semester's regular classes; lecturers add **extra or one-off sessions**
+  for their own courses (date, start/end time, venue, class type, optionally repeated weekly), and
+  edit or delete their sessions. A session students have already checked in to can't be deleted.
 - **Open check-in** on the day of the session: a fresh six-character code is generated each
   time (no look-alike characters such as 0/O or 1/I), shown large for projecting. It stays open
   until the session's end time and then closes by itself; the lecturer can also close it early.
@@ -56,6 +56,9 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 **Admin panel** (`admin/`, gated by `is_admin`; admins land on `admin/sessions.php`)
 - **Semesters** (`admin/semesters.php`): add long (14-week) or short (7-week) semesters by code and
   start date; overlapping semesters are rejected.
+- **Schedule the semester's regular classes** (`admin/session_create.php`) for any course: date,
+  time, venue and type, with **Repeat weekly** for up to 14 weeks (stopping at the end of the
+  semester).
 - **Enrol students in courses per semester** (`admin/enrolments.php`): pick a semester and course,
   select several students at once, and remove them again if needed (past attendance records are
   kept). Only students enrolled for that semester can check in to a course's sessions.

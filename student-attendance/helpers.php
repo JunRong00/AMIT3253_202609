@@ -468,3 +468,12 @@ function selected_semester($conn, $semesters) {
     }
     return default_semester($conn);
 }
+
+function course_exists($conn, $courseId) {
+    $stmt = $conn->prepare('SELECT 1 FROM courses WHERE id = ?');
+    $stmt->bind_param('i', $courseId);
+    $stmt->execute();
+    $exists = (bool)$stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $exists;
+}

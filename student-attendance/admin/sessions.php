@@ -5,6 +5,8 @@ require '../helpers.php';
 require_admin();
 
 $courseId = (int)($_GET['course_id'] ?? 0);
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+unset($_SESSION['flash_success']);
 $semesters = semester_options($conn);
 $semester = selected_semester($conn, $semesters);
 $semesterId = (int)($semester['id'] ?? 0);
@@ -36,7 +38,10 @@ $pageTitle = 'All Sessions';
 require 'partials/header.php';
 ?>
 <h1>All Sessions</h1>
-<p>Every class session across all courses. Lecturers schedule and open their own sessions from the public site.</p>
+<p>Every class session across all courses. Set up each semester's regular classes here with <strong>Repeat weekly</strong>;
+lecturers add one-off sessions for their own courses and open check-in from the public site.</p>
+<p><a class="btn btn-small" href="session_create.php<?= $courseId ? '?course_id=' . $courseId : '' ?>">+ Schedule Session</a></p>
+<?php if ($flashSuccess): ?><p class="alert alert-success"><?= htmlspecialchars($flashSuccess) ?></p><?php endif; ?>
 
 <form method="get" class="filter-bar">
 <label>Semester
