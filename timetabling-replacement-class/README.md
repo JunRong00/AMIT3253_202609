@@ -105,6 +105,7 @@ app. You are welcome to come up with your own instead.
 | **Cancel a class without replacement** | Easy | Let a lecturer cancel a single class (date + reason); show it struck through on the timetable. New `cancelled_classes` table. |
 | **Venue capacity check** | Easy | Add an expected class size to courses and grey out venues whose `capacity` is too small. |
 | **Printable / CSV timetable** | Easy | A button on `timetable.php` that downloads the week's classes as a CSV file. |
+| **Notify students of replacements** | Moderate | When the admin approves a replacement class, create a notification (new `notifications` table) for every student enrolled in that course, shown as an unread badge in the navbar. Optionally also email them with Amazon SES if your lab allows it. |
 | **Admin dashboard** | Easy | An `admin/index.php` with counts: pending requests, approved this week, busiest venue. |
 
 Document any function you add in your report: what it does, before/after screenshots, and the
