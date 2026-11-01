@@ -69,7 +69,7 @@ TAR UMT’s management aims to modernize its campus operations by introducing a 
 
 In your role as a cloud engineer, you are assigned to design and implement a proof of concept (POC) hosted on the AWS Cloud for a **campus digital service** . To ensure a broad scope, your project can focus on any official TAR UMT campus service, an academic department need, or an authorized external vendor/partner operating on the campus. Your system must be designed in alignment with the **AWS Well-Architected Framework** to ensure it remains scalable during high-traffic spikes, secure, and cost-optimized. 
 
-To provide flexibility, you may choose to build your platform around any of the following scenarios, including but not limited to: 
+These services are planned as parts of TAR UMT's student and staff intranet: each one is a separate system that students and staff log in to, and the university intends to move them to the cloud one at a time. Your group is responsible for one of them. To provide flexibility, you may choose to build your platform around any of the following scenarios, including but not limited to: 
 
 - Timetabling & Replacement Class System 
 
