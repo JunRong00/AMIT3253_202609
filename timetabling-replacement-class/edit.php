@@ -22,6 +22,7 @@ if ($request['status'] !== 'Pending') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $original_entry_id = (int)($_POST['original_entry_id'] ?? 0);
     $original_date    = $_POST['original_date'] ?? '';
     $replacement_date = $_POST['replacement_date'] ?? '';
     $time_slot_id     = (int)($_POST['time_slot_id'] ?? 0);
@@ -43,14 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
 
         $error = $venue
-            ? replacement_error($conn, (int)$request['course_id'], $original_date, $replacement_date, $time_slot_id, $venue_id, $id)
+            ? replacement_error($conn, (int)$request['course_id'], $original_entry_id, $original_date, $replacement_date, $time_slot_id, $venue_id, $id)
             : 'Please choose a valid venue.';
 
         if ($error !== '') {
             $conn->rollback();
         } else {
-            $stmt = $conn->prepare("UPDATE replacement_classes SET original_date=?, replacement_date=?, time_slot_id=?, venue_id=?, class_type=?, reason=? WHERE id=? AND user_id=? AND status='Pending'");
-            $stmt->bind_param('ssiissii', $original_date, $replacement_date, $time_slot_id, $venue_id, $class_type, $reason, $id, $uid);
+            $stmt = $conn->prepare("UPDATE replacement_classes SET original_entry_id=?, original_date=?, replacement_date=?, time_slot_id=?, venue_id=?, class_type=?, reason=? WHERE id=? AND user_id=? AND status='Pending'");
+            $stmt->bind_param('issiissii', $original_entry_id, $original_date, $replacement_date, $time_slot_id, $venue_id, $class_type, $reason, $id, $uid);
             $stmt->execute();
             $stmt->close();
             $conn->commit();
@@ -58,10 +59,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
     }
-    $request = array_merge($request, compact('original_date', 'replacement_date', 'time_slot_id', 'venue_id', 'class_type', 'reason'));
+    $request = array_merge($request, compact('original_entry_id', 'original_date', 'replacement_date', 'time_slot_id', 'venue_id', 'class_type', 'reason'));
 }
 
 $slots = $conn->query('SELECT * FROM time_slots ORDER BY start_time')->fetch_all(MYSQLI_ASSOC);
+$originalClasses = regular_classes_on($conn, (int)$request['course_id'], $request['original_date']);
 $venues = $conn->query('SELECT * FROM venues ORDER BY name')->fetch_all(MYSQLI_ASSOC);
 
 $pageTitle = 'Edit Replacement Request';
@@ -72,8 +74,17 @@ require 'partials/header.php';
 <?php if ($error): ?><p class="alert alert-error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 <form method="post">
 <input type="hidden" name="id" value="<?= (int)$request['id'] ?>">
+<input type="hidden" id="course-select" value="<?= (int)$request['course_id'] ?>">
 <label>Course <input type="text" value="<?= htmlspecialchars($request['code']) ?> <?= htmlspecialchars($request['course_name']) ?>" disabled></label>
-<label>Date of the Class Being Replaced <span class="required-mark">*</span> <input type="date" name="original_date" value="<?= htmlspecialchars($request['original_date']) ?>" required></label>
+<label>Original Class Date <span class="required-mark">*</span> <input type="date" name="original_date" id="original-date" value="<?= htmlspecialchars($request['original_date']) ?>" required></label>
+<label>Original Class <span class="required-mark">*</span>
+<select name="original_entry_id" id="original-entry" required>
+<?php if (empty($originalClasses)): ?><option value="">-- Pick the original class date first --</option><?php endif; ?>
+<?php foreach ($originalClasses as $oc): ?>
+<option value="<?= (int)$oc['id'] ?>" data-type="<?= htmlspecialchars($oc['class_type']) ?>" <?= (int)$oc['id'] === (int)$request['original_entry_id'] ? 'selected' : '' ?>><?= htmlspecialchars(original_class_label($oc)) ?></option>
+<?php endforeach; ?>
+</select>
+</label>
 <label>Class Type <span class="required-mark">*</span>
 <select name="class_type" required>
 <?php foreach (class_types() as $t): ?>

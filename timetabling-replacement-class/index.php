@@ -48,11 +48,13 @@ $courses = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 $replacementSql = '
-    SELECT r.*, c.code, c.name AS course_name, v.name AS venue_name, ts.start_time, ts.end_time
+    SELECT r.*, c.code, c.name AS course_name, v.name AS venue_name, ts.start_time, ts.end_time, ots.start_time AS orig_start, ots.end_time AS orig_end
     FROM replacement_classes r
     JOIN courses c ON c.id = r.course_id
     JOIN venues v ON v.id = r.venue_id
     JOIN time_slots ts ON ts.id = r.time_slot_id
+    JOIN timetable_entries oe ON oe.id = r.original_entry_id
+    JOIN time_slots ots ON ots.id = oe.time_slot_id
 ';
 $myRequests = [];
 $upcoming = [];
@@ -149,7 +151,7 @@ require 'partials/header.php';
 <?php foreach ($myRequests as $r): ?>
 <tr>
 <td><strong><?= htmlspecialchars($r['code']) ?></strong> <?= htmlspecialchars($r['course_name']) ?><br><span class="stat-label"><?= htmlspecialchars($r['class_type']) ?></span></td>
-<td><?= htmlspecialchars(date('D, d M Y', strtotime($r['original_date']))) ?></td>
+<td><?= htmlspecialchars(date('D, d M Y', strtotime($r['original_date']))) ?><br><span class="stat-label"><?= htmlspecialchars(time_slot_label(['start_time' => $r['orig_start'], 'end_time' => $r['orig_end']])) ?></span></td>
 <td><?= htmlspecialchars(date('D, d M Y', strtotime($r['replacement_date']))) ?><br><span class="stat-label"><?= htmlspecialchars(time_slot_label($r)) ?></span></td>
 <td><?= htmlspecialchars($r['venue_name']) ?></td>
 <td><span class="badge <?= status_badge_class($r['status']) ?>"><?= htmlspecialchars($r['status']) ?></span>
@@ -189,7 +191,7 @@ require 'partials/header.php';
 <td><?= htmlspecialchars(time_slot_label($r)) ?></td>
 <td><strong><?= htmlspecialchars($r['code']) ?></strong> <?= htmlspecialchars($r['course_name']) ?><br><span class="stat-label"><?= htmlspecialchars($r['class_type']) ?></span></td>
 <td><?= htmlspecialchars($r['venue_name']) ?></td>
-<td><?= htmlspecialchars(date('D, d M Y', strtotime($r['original_date']))) ?></td>
+<td><?= htmlspecialchars(date('D, d M Y', strtotime($r['original_date']))) ?><br><span class="stat-label"><?= htmlspecialchars(time_slot_label(['start_time' => $r['orig_start'], 'end_time' => $r['orig_end']])) ?></span></td>
 </tr>
 <?php endforeach; ?>
 </table>

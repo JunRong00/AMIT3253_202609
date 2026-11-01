@@ -73,5 +73,52 @@ $excludeReplacementId = $excludeReplacementId ?? 0;
     dateInput.addEventListener('change', refresh);
     slotSelect.addEventListener('change', refresh);
     refresh();
+
+    // Original Class: the chosen course's regular classes on the original
+    // date. Picking one also fills in the class type.
+    var courseSelect = document.getElementById('course-select');
+    var originalDate = document.getElementById('original-date');
+    var originalEntry = document.getElementById('original-entry');
+    var typeSelect = document.querySelector('select[name="class_type"]');
+
+    function fillType() {
+        var opt = originalEntry.options[originalEntry.selectedIndex];
+        if (opt && opt.dataset.type && typeSelect) {
+            typeSelect.value = opt.dataset.type;
+        }
+    }
+
+    function loadOriginalClasses() {
+        if (!courseSelect || !originalDate.value) { return; }
+        var previous = originalEntry.value;
+        fetch('original_classes.php?course_id=' + encodeURIComponent(courseSelect.value) + '&date=' + encodeURIComponent(originalDate.value))
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                originalEntry.innerHTML = '';
+                if (!data.classes.length) {
+                    var none = document.createElement('option');
+                    none.value = '';
+                    none.textContent = '-- This course has no class on that day --';
+                    originalEntry.appendChild(none);
+                    return;
+                }
+                data.classes.forEach(function (c) {
+                    var opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.dataset.type = c.class_type;
+                    opt.textContent = c.label;
+                    opt.selected = String(c.id) === previous;
+                    originalEntry.appendChild(opt);
+                });
+                fillType();
+            })
+            .catch(function () { /* the server re-checks the chosen class on submit */ });
+    }
+
+    if (courseSelect && courseSelect.tagName === 'SELECT') {
+        courseSelect.addEventListener('change', loadOriginalClasses);
+    }
+    originalDate.addEventListener('change', loadOriginalClasses);
+    originalEntry.addEventListener('change', fillType);
 })();
 </script>

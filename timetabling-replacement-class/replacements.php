@@ -7,11 +7,13 @@ require_login();
 
 [$visibleSql, $types, $params] = replacement_visibility_sql();
 $stmt = $conn->prepare("
-    SELECT r.*, c.code, c.name AS course_name, v.name AS venue_name, v.building, ts.start_time, ts.end_time, u.name AS lecturer_name
+    SELECT r.*, c.code, c.name AS course_name, v.name AS venue_name, v.building, ts.start_time, ts.end_time, ots.start_time AS orig_start, ots.end_time AS orig_end, u.name AS lecturer_name
     FROM replacement_classes r
     JOIN courses c ON c.id = r.course_id
     JOIN venues v ON v.id = r.venue_id
     JOIN time_slots ts ON ts.id = r.time_slot_id
+    JOIN timetable_entries oe ON oe.id = r.original_entry_id
+    JOIN time_slots ots ON ots.id = oe.time_slot_id
     JOIN users u ON u.id = r.user_id
     WHERE r.status = 'Approved' AND r.replacement_date >= CURDATE() AND $visibleSql
     ORDER BY r.replacement_date, ts.start_time
@@ -53,7 +55,7 @@ require 'partials/header.php';
 <td><strong><?= htmlspecialchars($r['code']) ?></strong> <?= htmlspecialchars($r['course_name']) ?><br><span class="stat-label"><?= htmlspecialchars($r['class_type']) ?></span></td>
 <td><?= htmlspecialchars($r['venue_name']) ?><br><span class="stat-label"><?= htmlspecialchars($r['building']) ?></span></td>
 <td><?= htmlspecialchars($r['lecturer_name']) ?></td>
-<td><?= htmlspecialchars(date('D, d M Y', strtotime($r['original_date']))) ?></td>
+<td><?= htmlspecialchars(date('D, d M Y', strtotime($r['original_date']))) ?><br><span class="stat-label"><?= htmlspecialchars(time_slot_label(['start_time' => $r['orig_start'], 'end_time' => $r['orig_end']])) ?></span></td>
 </tr>
 <?php endforeach; ?>
 </table>

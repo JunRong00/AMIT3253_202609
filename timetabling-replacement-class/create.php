@@ -8,6 +8,7 @@ $uid = current_user_id();
 $error = '';
 $form = [
     'course_id'        => (int)($_GET['course_id'] ?? 0),
+    'original_entry_id' => 0,
     'original_date'    => '',
     'replacement_date' => date('N') === '7' ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d'),
     'time_slot_id'     => 0,
@@ -18,13 +19,14 @@ $form = [
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $course_id        = (int)($_POST['course_id'] ?? 0);
+    $original_entry_id = (int)($_POST['original_entry_id'] ?? 0);
     $original_date    = $_POST['original_date'] ?? '';
     $replacement_date = $_POST['replacement_date'] ?? '';
     $time_slot_id     = (int)($_POST['time_slot_id'] ?? 0);
     $venue_id         = (int)($_POST['venue_id'] ?? 0);
     $class_type       = $_POST['class_type'] ?? '';
     $reason           = trim($_POST['reason'] ?? '');
-    $form = compact('course_id', 'original_date', 'replacement_date', 'time_slot_id', 'venue_id', 'class_type', 'reason');
+    $form = compact('course_id', 'original_entry_id', 'original_date', 'replacement_date', 'time_slot_id', 'venue_id', 'class_type', 'reason');
 
     if ($reason === '') {
         $error = 'Please give a reason for the replacement class.';
@@ -44,14 +46,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
 
         $error = $venue
-            ? replacement_error($conn, $course_id, $original_date, $replacement_date, $time_slot_id, $venue_id)
+            ? replacement_error($conn, $course_id, $original_entry_id, $original_date, $replacement_date, $time_slot_id, $venue_id)
             : 'Please choose a valid venue.';
 
         if ($error !== '') {
             $conn->rollback();
         } else {
-            $stmt = $conn->prepare('INSERT INTO replacement_classes (user_id, course_id, original_date, replacement_date, time_slot_id, venue_id, class_type, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-            $stmt->bind_param('iissiiss', $uid, $course_id, $original_date, $replacement_date, $time_slot_id, $venue_id, $class_type, $reason);
+            $stmt = $conn->prepare('INSERT INTO replacement_classes (user_id, course_id, original_entry_id, original_date, replacement_date, time_slot_id, venue_id, class_type, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->bind_param('iiissiiss', $uid, $course_id, $original_entry_id, $original_date, $replacement_date, $time_slot_id, $venue_id, $class_type, $reason);
             $stmt->execute();
             $stmt->close();
             $conn->commit();
@@ -68,6 +70,8 @@ $myCourses = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 $slots = $conn->query('SELECT * FROM time_slots ORDER BY start_time')->fetch_all(MYSQLI_ASSOC);
+$selectedCourse = (int)$form['course_id'] ?: (int)($myCourses[0]['id'] ?? 0);
+$originalClasses = $form['original_date'] !== '' ? regular_classes_on($conn, $selectedCourse, $form['original_date']) : [];
 $venues = $conn->query('SELECT * FROM venues ORDER BY name')->fetch_all(MYSQLI_ASSOC);
 
 $pageTitle = 'Request Replacement Class';
@@ -81,13 +85,21 @@ require 'partials/header.php';
 <?php else: ?>
 <form method="post">
 <label>Course <span class="required-mark">*</span>
-<select name="course_id" required>
+<select name="course_id" id="course-select" required>
 <?php foreach ($myCourses as $c): ?>
 <option value="<?= (int)$c['id'] ?>" <?= (int)$c['id'] === (int)$form['course_id'] ? 'selected' : '' ?>><?= htmlspecialchars($c['code']) ?> <?= htmlspecialchars($c['name']) ?></option>
 <?php endforeach; ?>
 </select>
 </label>
-<label>Date of the Class Being Replaced <span class="required-mark">*</span> <input type="date" name="original_date" value="<?= htmlspecialchars($form['original_date']) ?>" required></label>
+<label>Original Class Date <span class="required-mark">*</span> <input type="date" name="original_date" id="original-date" value="<?= htmlspecialchars($form['original_date']) ?>" required></label>
+<label>Original Class <span class="required-mark">*</span>
+<select name="original_entry_id" id="original-entry" required>
+<?php if (empty($originalClasses)): ?><option value="">-- Pick the original class date first --</option><?php endif; ?>
+<?php foreach ($originalClasses as $oc): ?>
+<option value="<?= (int)$oc['id'] ?>" data-type="<?= htmlspecialchars($oc['class_type']) ?>" <?= (int)$oc['id'] === (int)$form['original_entry_id'] ? 'selected' : '' ?>><?= htmlspecialchars(original_class_label($oc)) ?></option>
+<?php endforeach; ?>
+</select>
+</label>
 <label>Class Type <span class="required-mark">*</span>
 <select name="class_type" required>
 <?php foreach (class_types() as $t): ?>

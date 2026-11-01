@@ -482,24 +482,23 @@ function busy_venue_ids($conn, $date, $slotId, $excludeReplacementId = 0) {
 // Every class actually taking place on $date during $slotId: regular weekly
 // classes (minus any replaced by an approved replacement that day) plus
 // Pending/Approved replacement classes. $excludeReplacementId leaves out the
-// request being edited, and $skipCourseId leaves out that course's own
-// regular class (the one being replaced). Returns rows of id, code,
-// class_type and lecturer_id.
-function classes_at($conn, $date, $slotId, $excludeReplacementId = 0, $skipCourseId = 0) {
+// request being edited, and $skipEntryId leaves out one regular class (the
+// one being replaced). Returns rows of id, code, class_type and lecturer_id.
+function classes_at($conn, $date, $slotId, $excludeReplacementId = 0, $skipEntryId = 0) {
     $dow = day_of_week($date);
     $semesterId = (int)(semester_for_date($conn, $date)['id'] ?? 0);
     $stmt = $conn->prepare("
         SELECT c.id, c.code, t.class_type, c.lecturer_id
         FROM timetable_entries t JOIN courses c ON c.id = t.course_id
-        WHERE t.semester_id = ? AND t.day_of_week = ? AND t.time_slot_id = ? AND t.course_id != ?
+        WHERE t.semester_id = ? AND t.day_of_week = ? AND t.time_slot_id = ? AND t.id != ?
           AND NOT EXISTS (SELECT 1 FROM replacement_classes r2
-                          WHERE r2.course_id = t.course_id AND r2.original_date = ? AND r2.status = 'Approved')
+                          WHERE r2.original_entry_id = t.id AND r2.original_date = ? AND r2.status = 'Approved')
         UNION ALL
         SELECT c.id, c.code, r.class_type, c.lecturer_id
         FROM replacement_classes r JOIN courses c ON c.id = r.course_id
         WHERE r.replacement_date = ? AND r.time_slot_id = ? AND r.status IN ('Pending', 'Approved') AND r.id != ?
     ");
-    $stmt->bind_param('iiiissii', $semesterId, $dow, $slotId, $skipCourseId, $date, $date, $slotId, $excludeReplacementId);
+    $stmt->bind_param('iiiissii', $semesterId, $dow, $slotId, $skipEntryId, $date, $date, $slotId, $excludeReplacementId);
     $stmt->execute();
     $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
@@ -509,7 +508,7 @@ function classes_at($conn, $date, $slotId, $excludeReplacementId = 0, $skipCours
 // Validates a replacement class request (shared by create.php and edit.php).
 // Returns an error message, or '' if the request is valid. Must be called
 // inside a transaction that has already locked the venue row.
-function replacement_error($conn, $courseId, $originalDate, $replacementDate, $slotId, $venueId, $excludeId = 0) {
+function replacement_error($conn, $courseId, $originalEntryId, $originalDate, $replacementDate, $slotId, $venueId, $excludeId = 0) {
     if ($originalDate === '' || $replacementDate === '') {
         return 'Please choose both the original class date and the replacement date.';
     }
@@ -550,20 +549,30 @@ function replacement_error($conn, $courseId, $originalDate, $replacementDate, $s
 
     $dow = day_of_week($originalDate);
     $semesterId = (int)$semester['id'];
-    $stmt = $conn->prepare('SELECT 1 FROM timetable_entries WHERE semester_id = ? AND course_id = ? AND day_of_week = ?');
-    $stmt->bind_param('iii', $semesterId, $courseId, $dow);
+    $stmt = $conn->prepare('SELECT 1 FROM timetable_entries WHERE id = ? AND semester_id = ? AND course_id = ? AND day_of_week = ?');
+    $stmt->bind_param('iiii', $originalEntryId, $semesterId, $courseId, $dow);
     $stmt->execute();
-    $hasClass = (bool)$stmt->get_result()->fetch_assoc();
+    $isClass = (bool)$stmt->get_result()->fetch_assoc();
     $stmt->close();
-    if (!$hasClass) {
-        return 'This course has no regular class on ' . date('l, d M Y', strtotime($originalDate)) . ' - pick the date of the class being replaced.';
+    if (!$isClass) {
+        return 'Please choose which of this course\'s classes on ' . date('l, d M Y', strtotime($originalDate)) . ' is being replaced.';
+    }
+
+    // A class can only have one live replacement request per date.
+    $stmt = $conn->prepare("SELECT status FROM replacement_classes WHERE original_entry_id = ? AND original_date = ? AND status IN ('Pending', 'Approved') AND id != ?");
+    $stmt->bind_param('isi', $originalEntryId, $originalDate, $excludeId);
+    $stmt->execute();
+    $existing = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if ($existing) {
+        return 'This class already has a replacement request for that date (' . $existing['status'] . ').';
     }
 
     if (in_array($venueId, busy_venue_ids($conn, $replacementDate, $slotId, $excludeId), true)) {
         return 'That venue is already in use at this time. Please choose another venue or slot.';
     }
 
-    $others = classes_at($conn, $replacementDate, $slotId, $excludeId, $replacementDate === $originalDate ? $courseId : 0);
+    $others = classes_at($conn, $replacementDate, $slotId, $excludeId, $replacementDate === $originalDate ? $originalEntryId : 0);
 
     // Lecturer clash: the course's lecturer already teaches something then.
     $stmt = $conn->prepare('SELECT lecturer_id FROM courses WHERE id = ?');
@@ -621,4 +630,29 @@ function replacement_visibility_sql() {
         WHERE e.user_id = ? AND e.course_id = r.course_id
           AND r.replacement_date BETWEEN s.start_date AND DATE_ADD(s.start_date, INTERVAL s.weeks * 7 - 1 DAY)
     )', 'i', [$uid]];
+}
+
+// A course's regular classes on $date (in the semester that date falls in),
+// for the "Original Class" dropdown. Returns rows of id, class_type, time
+// and venue.
+function regular_classes_on($conn, $courseId, $date) {
+    $semesterId = (int)(semester_for_date($conn, $date)['id'] ?? 0);
+    $dow = day_of_week($date);
+    $stmt = $conn->prepare('
+        SELECT t.id, t.class_type, ts.start_time, ts.end_time, v.name AS venue_name
+        FROM timetable_entries t
+        JOIN time_slots ts ON ts.id = t.time_slot_id
+        JOIN venues v ON v.id = t.venue_id
+        WHERE t.semester_id = ? AND t.course_id = ? AND t.day_of_week = ?
+        ORDER BY ts.start_time
+    ');
+    $stmt->bind_param('iii', $semesterId, $courseId, $dow);
+    $stmt->execute();
+    $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $rows;
+}
+
+function original_class_label($row) {
+    return time_slot_label($row) . ' · ' . $row['class_type'] . ' · ' . $row['venue_name'];
 }

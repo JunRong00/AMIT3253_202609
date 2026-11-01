@@ -7,7 +7,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = (int)$_POST['id'];
     $stmt = $conn->prepare('DELETE FROM timetable_entries WHERE id = ?');
     $stmt->bind_param('i', $id);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        $_SESSION['flash_error'] = 'Cannot remove this class: replacement class requests refer to it. Delete those requests first.';
+    }
     $stmt->close();
 }
 

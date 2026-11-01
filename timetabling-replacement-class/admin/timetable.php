@@ -4,7 +4,8 @@ require '../auth.php';
 require '../helpers.php';
 require_admin();
 
-$error = '';
+$error = $_SESSION['flash_error'] ?? '';
+unset($_SESSION['flash_error']);
 $success = '';
 
 $semesters = $conn->query('SELECT * FROM semesters ORDER BY start_date')->fetch_all(MYSQLI_ASSOC);

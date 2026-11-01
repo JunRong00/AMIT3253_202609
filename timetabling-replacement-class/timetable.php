@@ -52,7 +52,7 @@ $lastHour = (int)ceil(strtotime('1970-01-01 ' . ($range['last_end'] ?? '18:00:00
 $hours = range($firstHour, max($firstHour, $lastHour - 1));
 
 $stmt = $conn->prepare('
-    SELECT t.course_id, t.day_of_week, t.class_type, c.code, c.name AS course_name, v.name AS venue_name, v.building,
+    SELECT t.id AS entry_id, t.course_id, t.day_of_week, t.class_type, c.code, c.name AS course_name, v.name AS venue_name, v.building,
            u.name AS lecturer_name, ts.start_time, ts.end_time
     FROM timetable_entries t
     JOIN courses c ON c.id = t.course_id
@@ -81,12 +81,12 @@ $stmt->close();
 
 // A regular class whose date this week has an approved replacement is shown
 // as replaced, so students know not to turn up.
-$stmt = $conn->prepare("SELECT course_id, original_date FROM replacement_classes WHERE status = 'Approved' AND original_date BETWEEN ? AND ?");
+$stmt = $conn->prepare("SELECT original_entry_id, original_date FROM replacement_classes WHERE status = 'Approved' AND original_date BETWEEN ? AND ?");
 $stmt->bind_param('ss', $monday, $sunday);
 $stmt->execute();
 $replaced = [];
 foreach ($stmt->get_result()->fetch_all(MYSQLI_ASSOC) as $row) {
-    $replaced[$row['course_id'] . '|' . $row['original_date']] = true;
+    $replaced[$row['original_entry_id'] . '|' . $row['original_date']] = true;
 }
 $stmt->close();
 
@@ -101,7 +101,7 @@ $stmt->close();
 $days = [];
 foreach ($entries as $e) {
     $date = $dates[(int)$e['day_of_week']];
-    if (isset($replaced[$e['course_id'] . '|' . $date])) {
+    if (isset($replaced[$e['entry_id'] . '|' . $date])) {
         $e['kind'] = 'replaced';
     } elseif (isset($holidays[$date])) {
         $e['kind'] = 'holiday';

@@ -41,8 +41,8 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 
 **Lecturers** (accounts created by an admin, `users.role = 'lecturer'`)
 - See the same semester timetable and replacement list, for the courses they teach.
-- Request a replacement class for a course they teach: the date of the class being replaced,
-  a replacement date, a fixed time slot (from `time_slots`, not free text), a venue and a
+- Request a replacement class for a course they teach: the **original class** being replaced
+  (pick the date, then which of that day's classes — e.g. 8:00–10:00 am Practical), a replacement date, a fixed time slot (from `time_slots`, not free text), a venue and a
   reason. "My Replacement Requests" on the homepage, with edit/withdraw while Pending.
 - **Venue clashes are prevented concurrency-safely.** A venue is busy if a regular weekly class
   uses it on that weekday and slot, or another Pending/Approved replacement holds it. The venue

@@ -11,12 +11,14 @@ $status = $_GET['status'] ?? 'Pending';
 $validStatuses = ['Pending', 'Approved', 'Rejected'];
 
 $sql = '
-    SELECT r.*, c.code, c.name AS course_name, v.name AS venue_name, ts.start_time, ts.end_time,
+    SELECT r.*, c.code, c.name AS course_name, v.name AS venue_name, ts.start_time, ts.end_time, ots.start_time AS orig_start, ots.end_time AS orig_end,
            u.name AS lecturer_name, u.email AS lecturer_email
     FROM replacement_classes r
     JOIN courses c ON c.id = r.course_id
     JOIN venues v ON v.id = r.venue_id
     JOIN time_slots ts ON ts.id = r.time_slot_id
+    JOIN timetable_entries oe ON oe.id = r.original_entry_id
+    JOIN time_slots ots ON ots.id = oe.time_slot_id
     JOIN users u ON u.id = r.user_id
 ';
 if (in_array($status, $validStatuses, true)) {
@@ -60,7 +62,7 @@ require 'partials/header.php';
 <tr>
 <td><strong><?= htmlspecialchars($r['code']) ?></strong> <?= htmlspecialchars($r['course_name']) ?><br><span class="stat-label"><?= htmlspecialchars($r['class_type']) ?></span></td>
 <td><?= htmlspecialchars($r['lecturer_name']) ?><br><span class="stat-label"><?= htmlspecialchars($r['lecturer_email']) ?></span></td>
-<td><?= htmlspecialchars(date('D, d M Y', strtotime($r['original_date']))) ?></td>
+<td><?= htmlspecialchars(date('D, d M Y', strtotime($r['original_date']))) ?><br><span class="stat-label"><?= htmlspecialchars(time_slot_label(['start_time' => $r['orig_start'], 'end_time' => $r['orig_end']])) ?></span></td>
 <td><?= htmlspecialchars(date('D, d M Y', strtotime($r['replacement_date']))) ?><br><span class="stat-label"><?= htmlspecialchars(time_slot_label($r)) ?> &middot; <?= htmlspecialchars($r['venue_name']) ?></span></td>
 <td><?= nl2br(htmlspecialchars($r['reason'])) ?></td>
 <td>

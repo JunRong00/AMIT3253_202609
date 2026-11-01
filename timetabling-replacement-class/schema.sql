@@ -148,6 +148,9 @@ CREATE TABLE replacement_classes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   course_id INT NOT NULL,
+  -- The exact regular class (timetable_entries row) being replaced, on
+  -- original_date.
+  original_entry_id INT NOT NULL,
   original_date DATE NOT NULL,
   replacement_date DATE NOT NULL,
   time_slot_id INT NOT NULL,
@@ -160,16 +163,17 @@ CREATE TABLE replacement_classes (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (course_id) REFERENCES courses(id),
+  FOREIGN KEY (original_entry_id) REFERENCES timetable_entries(id),
   FOREIGN KEY (time_slot_id) REFERENCES time_slots(id),
   FOREIGN KEY (venue_id) REFERENCES venues(id)
 );
 
 -- Dates are relative to the week the schema is imported: replacing classes
 -- from this week with slots next week.
-INSERT INTO replacement_classes (user_id, course_id, original_date, replacement_date, time_slot_id, venue_id, class_type, reason, status, admin_note) VALUES
-(2, 1, DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), DATE_ADD(CURDATE(), INTERVAL 9 - WEEKDAY(CURDATE()) DAY), 4, 4, 'Lecture', 'Attending an industry conference.', 'Approved', 'Approved - venue confirmed.'),
-(2, 2, DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 1 DAY), DATE_ADD(CURDATE(), INTERVAL 11 - WEEKDAY(CURDATE()) DAY), 5, 1, 'Lecture', 'Medical leave.', 'Pending', NULL),
-(2, 3, DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), DATE_ADD(CURDATE(), INTERVAL 10 - WEEKDAY(CURDATE()) DAY), 2, 2, 'Tutorial', 'Public holiday.', 'Rejected', 'Students have another class at this time - please pick a different slot.');
+INSERT INTO replacement_classes (user_id, course_id, original_entry_id, original_date, replacement_date, time_slot_id, venue_id, class_type, reason, status, admin_note) VALUES
+(2, 1, 1, DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), DATE_ADD(CURDATE(), INTERVAL 9 - WEEKDAY(CURDATE()) DAY), 4, 4, 'Lecture', 'Attending an industry conference.', 'Approved', 'Approved - venue confirmed.'),
+(2, 2, 4, DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 1 DAY), DATE_ADD(CURDATE(), INTERVAL 11 - WEEKDAY(CURDATE()) DAY), 5, 1, 'Lecture', 'Medical leave.', 'Pending', NULL),
+(2, 3, 6, DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), DATE_ADD(CURDATE(), INTERVAL 10 - WEEKDAY(CURDATE()) DAY), 2, 2, 'Tutorial', 'Public holiday.', 'Rejected', 'Students have another class at this time - please pick a different slot.');
 
 CREATE TABLE feedback (
   id INT AUTO_INCREMENT PRIMARY KEY,
