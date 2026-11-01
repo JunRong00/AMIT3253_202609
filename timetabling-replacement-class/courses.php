@@ -59,7 +59,7 @@ require 'partials/header.php';
 <p>No classes timetabled yet.</p>
 <?php else: ?>
 <?php foreach ($entriesByCourse[(int)$c['id']] as $e): ?>
-<p>&#128197; <?= htmlspecialchars(weekdays()[(int)$e['day_of_week']]) ?> &middot; <?= htmlspecialchars(time_slot_label($e)) ?>
+<p>&#128197; <?= htmlspecialchars(weekdays()[(int)$e['day_of_week']]) ?> &middot; <?= htmlspecialchars(time_slot_label($e)) ?> 
 &middot; <?= htmlspecialchars($e['class_type']) ?> &middot; <?= htmlspecialchars($e['venue_name']) ?></p>
 <?php endforeach; ?>
 <?php endif; ?>

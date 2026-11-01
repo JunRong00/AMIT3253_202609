@@ -158,7 +158,7 @@ require 'partials/header.php';
 <h1>Semester Timetable</h1>
 <p><?= htmlspecialchars(semester_label($semester)) ?> &middot; <strong>Week <?= $week ?> of <?= $totalWeeks ?></strong>
 (<?= htmlspecialchars(date('d M', strtotime($monday))) ?> &ndash; <?= htmlspecialchars(date('d M Y', strtotime($sunday))) ?>).
-<?= current_user_is_admin() ? 'Showing every course.' : (current_user_is_lecturer() ? 'Showing the courses you teach.' : 'Showing the courses you are enrolled in this semester.') ?>
+<?= current_user_is_admin() ? 'Showing every course.' : (current_user_is_lecturer() ? 'Showing the courses you teach.' : 'Showing the courses you are enrolled in this semester.') ?> 
 &middot; Hover over a class for details.</p>
 </div>
 

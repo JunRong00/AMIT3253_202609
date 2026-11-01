@@ -18,6 +18,16 @@ Deploying a Scalable and Secure Campus Digital Services Platform**.
 | [`student-attendance/`](student-attendance/) | Student Attendance System | Lecturers open check-in; students check in with a one-time code |
 | [`facility-issue-reporting/`](facility-issue-reporting/) | Campus Facility Issue Reporting System | Students and staff report broken facilities and follow the repair status |
 
+## Screenshots
+
+Each app has its own colour so they're easy to tell apart.
+
+| | |
+|---|---|
+| **Timetabling & Replacement Class** (purple)<br>![Timetable](timetabling-replacement-class/screenshots/timetable.jpg) | **Student Self-Service Portal** (teal)<br>![Self-service homepage](student-self-service/screenshots/homepage.jpg) |
+| **Campus Recruitment & Applications** (orange)<br>![Recruitment homepage](campus-recruitment/screenshots/homepage.jpg) | **Student Attendance System** (blue)<br>![Attendance homepage](student-attendance/screenshots/homepage.jpg) |
+| **Campus Facility Issue Reporting** (magenta)<br>![Facility homepage](facility-issue-reporting/screenshots/homepage.jpg) | |
+
 ## What every app includes
 
 Each folder is self-contained and follows the same structure and conventions:

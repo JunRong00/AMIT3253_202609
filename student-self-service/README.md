@@ -4,6 +4,15 @@ A PHP + MySQL web app for the **AMIT3253 Cloud Computing for Business** capstone
 (202609). Students check their examination results and request official documents (transcripts, confirmation letters, fee statements) without queuing at the Registry counter. Use this folder as-is as your Phase 2/3 starting point so you can focus on
 the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
+![Student homepage](screenshots/homepage.jpg)
+*Student homepage — profile and latest semester's results.*
+
+![My Results](screenshots/results.jpg)
+*My Results — every semester's grades with totals.*
+
+![Requesting a document](screenshots/document-request.jpg)
+*Requesting a document — the fee updates as the number of copies changes.*
+
 ## Features
 
 **Every logged-in user**

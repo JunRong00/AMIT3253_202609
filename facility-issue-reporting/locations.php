@@ -52,7 +52,7 @@ require 'partials/header.php';
 <?php foreach ($active as $a): ?>
 <p>
 <span class="badge <?= status_badge_class($a['status']) ?>"><?= htmlspecialchars($a['status']) ?></span>
-<strong><?= htmlspecialchars($a['title']) ?></strong> &middot; <?= htmlspecialchars($a['category']) ?>
+<strong><?= htmlspecialchars($a['title']) ?></strong> &middot; <?= htmlspecialchars($a['category']) ?> 
 &middot; reported <?= htmlspecialchars(date('d M', strtotime($a['created_at']))) ?>
 </p>
 <?php endforeach; ?>

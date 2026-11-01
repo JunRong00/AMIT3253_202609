@@ -31,8 +31,8 @@ require 'partials/header.php';
 <img class="card-thumb" src="<?= htmlspecialchars(entity_image_url($d)) ?>" alt="<?= htmlspecialchars($d['name']) ?>" loading="lazy">
 <h3><?= htmlspecialchars($d['name']) ?></h3>
 <p><?= htmlspecialchars($d['description']) ?></p>
-<p><?= (float)$d['fee'] > 0 ? 'RM' . number_format($d['fee'], 2) . ' per copy' : 'Free of charge' ?>
-&middot; ready in <?= (int)$d['processing_days'] ?> working day<?= (int)$d['processing_days'] === 1 ? '' : 's' ?>
+<p><?= (float)$d['fee'] > 0 ? 'RM' . number_format($d['fee'], 2) . ' per copy' : 'Free of charge' ?> 
+&middot; ready in <?= (int)$d['processing_days'] ?> working day<?= (int)$d['processing_days'] === 1 ? '' : 's' ?> 
 &middot; up to <?= (int)$d['max_copies'] ?> cop<?= (int)$d['max_copies'] === 1 ? 'y' : 'ies' ?> per request</p>
 <?php if (current_user_id()): ?>
 <a class="btn" href="create.php?document_type_id=<?= (int)$d['id'] ?>">Request</a>

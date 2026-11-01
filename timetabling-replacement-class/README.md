@@ -4,6 +4,15 @@ A PHP + MySQL web app for the **AMIT3253 Cloud Computing for Business** capstone
 (202609). Students and lecturers view the weekly class timetable; lecturers request replacement classes, which appear on the timetable once an admin approves them. Use this folder as-is as your Phase 2/3 starting point so you can focus on
 the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
+![Semester timetable (student view)](screenshots/timetable.jpg)
+*Semester timetable (student view) — only their enrolled courses; the replacement class is shown in olive and Deepavali is marked.*
+
+![Lecturer's replacement class request](screenshots/replacement-request.jpg)
+*Lecturer's replacement class request — venues already in use at that time are greyed out.*
+
+![Admin](screenshots/admin-requests.jpg)
+*Admin — approve or reject replacement requests with a note to the lecturer.*
+
 ## Features
 
 **Semesters**

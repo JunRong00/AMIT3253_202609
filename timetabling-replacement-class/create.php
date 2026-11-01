@@ -9,7 +9,7 @@ $error = '';
 $form = [
     'course_id'        => (int)($_GET['course_id'] ?? 0),
     'original_date'    => '',
-    'replacement_date' => date('Y-m-d'),
+    'replacement_date' => date('N') === '7' ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d'),
     'time_slot_id'     => 0,
     'venue_id'         => 0,
     'class_type'       => 'Lecture',

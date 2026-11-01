@@ -4,6 +4,15 @@ A PHP + MySQL web app for the **AMIT3253 Cloud Computing for Business** capstone
 (202609). Students and staff report broken campus facilities to the Estate Management Office and follow each repair from Open to Resolved. Use this folder as-is as your Phase 2/3 starting point so you can focus on
 the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
+![Homepage](screenshots/homepage.jpg)
+*Homepage — campus locations with how many active issues each has.*
+
+![Issue Board](screenshots/issue-board.jpg)
+*Issue Board — every report and where it is in the repair process.*
+
+![Reporting an issue](screenshots/report-form.jpg)
+*Reporting an issue — categories already reported at that location are greyed out.*
+
 ## Features
 
 **Every logged-in user**

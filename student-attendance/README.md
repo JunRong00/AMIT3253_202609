@@ -4,6 +4,15 @@ A PHP + MySQL web app for the **AMIT3253 Cloud Computing for Business** capstone
 (202609). Lecturers open check-in for a class and show a one-time code; students enter the code to record their attendance as Present or Late. Use this folder as-is as your Phase 2/3 starting point so you can focus on
 the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
+![Student homepage](screenshots/homepage.jpg)
+*Student homepage — check in with the session code and see today's classes.*
+
+![Lecturer's session page](screenshots/lecturer-session.jpg)
+*Lecturer's session page — the check-in code to project in class and a live list of who has checked in.*
+
+![My Attendance](screenshots/my-attendance.jpg)
+*My Attendance — every session so far marked Present, Late or Absent.*
+
 ## Features
 
 **Students**

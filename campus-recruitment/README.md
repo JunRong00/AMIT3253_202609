@@ -4,6 +4,15 @@ A PHP + MySQL web app for the **AMIT3253 Cloud Computing for Business** capstone
 (202609). Students browse campus jobs, internships, club positions and scholarships, apply online, and track each application's status. Use this folder as-is as your Phase 2/3 starting point so you can focus on
 the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
+![Homepage](screenshots/homepage.jpg)
+*Homepage — open opportunities with category filter and days left before each deadline.*
+
+![My Applications](screenshots/my-applications.jpg)
+*My Applications — status and the Careers Centre's note (e.g. interview details).*
+
+![Upcoming Deadlines](screenshots/deadlines.jpg)
+*Upcoming Deadlines — closing soonest first, with vacancies filled so far.*
+
 ## Features
 
 **Every logged-in user**

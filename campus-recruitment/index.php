@@ -106,7 +106,7 @@ require 'partials/header.php';
 <h3><?= htmlspecialchars($o['title']) ?></h3>
 <p><?= htmlspecialchars($o['organisation']) ?></p>
 <p><?= (int)$o['vacancies'] ?> vacanc<?= (int)$o['vacancies'] === 1 ? 'y' : 'ies' ?> &middot;
-closes <?= htmlspecialchars(date('d M Y', strtotime($o['deadline']))) ?>
+closes <?= htmlspecialchars(date('d M Y', strtotime($o['deadline']))) ?> 
 (<?= $daysLeft === 0 ? 'today' : $daysLeft . ' day' . ($daysLeft === 1 ? '' : 's') . ' left' ?>)</p>
 <?php if ($isFilled): ?>
 <span class="badge badge-neutral">All vacancies filled</span>

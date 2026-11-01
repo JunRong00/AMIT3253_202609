@@ -33,7 +33,7 @@ $pageTitle = 'Replacement Requests';
 require 'partials/header.php';
 ?>
 <h1>Replacement Requests</h1>
-<p>Approve or reject lecturers' replacement class requests. Approved classes appear on the public timetable immediately; the note is shown to the lecturer.</p>
+<p>Approve or reject lecturers' replacement class requests. Approved classes appear on enrolled students' timetables immediately; the note is shown to the lecturer.</p>
 <?php if ($flashError): ?><p class="alert alert-error"><?= htmlspecialchars($flashError) ?></p><?php endif; ?>
 
 <form method="get" class="filter-bar">

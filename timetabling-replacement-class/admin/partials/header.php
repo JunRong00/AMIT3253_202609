@@ -21,7 +21,9 @@
 <a class="brand" href="replacements.php"><img src="../assets/tarumt-logo.png" alt="TAR UMT" class="brand-logo">Admin &middot; Timetabling & Replacement Class</a>
 <div class="nav-links">
 <a href="replacements.php" class="<?= $currentPage === 'replacements.php' ? 'active' : '' ?>">Requests</a>
+<a href="semesters.php" class="<?= $currentPage === 'semesters.php' ? 'active' : '' ?>">Semesters</a>
 <a href="timetable.php" class="<?= $currentPage === 'timetable.php' ? 'active' : '' ?>">Timetable</a>
+<a href="enrolments.php" class="<?= $currentPage === 'enrolments.php' ? 'active' : '' ?>">Enrolments</a>
 <a href="courses.php" class="<?= $currentPage === 'courses.php' ? 'active' : '' ?>">Courses</a>
 <a href="venues.php" class="<?= $currentPage === 'venues.php' ? 'active' : '' ?>">Venues</a>
 <a href="holidays.php" class="<?= $currentPage === 'holidays.php' ? 'active' : '' ?>">Holidays</a>

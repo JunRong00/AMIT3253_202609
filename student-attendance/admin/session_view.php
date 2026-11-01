@@ -40,8 +40,7 @@ $pageTitle = 'Session Attendance';
 require 'partials/header.php';
 ?>
 <h1><?= htmlspecialchars($session['code']) ?> <?= htmlspecialchars($session['course_name']) ?></h1>
-<p><?= htmlspecialchars($session['class_type']) ?> &middot; <?= htmlspecialchars(date('D, d M Y', strtotime($session['session_date']))) ?>
-&middot; <?= htmlspecialchars(format_time_range($session['start_time'], $session['end_time'])) ?> &middot; <?= htmlspecialchars($session['venue']) ?></p>
+<p><?= htmlspecialchars($session['class_type']) ?> &middot; <?= htmlspecialchars(date('D, d M Y', strtotime($session['session_date']))) ?> &middot; <?= htmlspecialchars(format_time_range($session['start_time'], $session['end_time'])) ?> &middot; <?= htmlspecialchars($session['venue']) ?></p>
 
 <?php if (empty($roster)): ?>
 <div class="empty-state">
