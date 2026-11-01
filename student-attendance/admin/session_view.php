@@ -17,7 +17,7 @@ $session = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$session) {
-    die('Session not found.');
+    die('Class not found.');
 }
 
 // Full class roster: every enrolled student plus anyone who checked in and
@@ -37,7 +37,7 @@ $stmt->execute();
 $roster = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-$pageTitle = 'Session Attendance';
+$pageTitle = 'Class Attendance';
 require 'partials/header.php';
 ?>
 <h1><?= htmlspecialchars($session['code']) ?> <?= htmlspecialchars($session['course_name']) ?></h1>
@@ -71,5 +71,5 @@ require 'partials/header.php';
 <?php endforeach; ?>
 </table>
 <?php endif; ?>
-<p><a class="btn btn-secondary btn-small" href="sessions.php">Back to sessions</a></p>
+<p><a class="btn btn-secondary btn-small" href="sessions.php">Back to classes</a></p>
 <?php require 'partials/footer.php'; ?>

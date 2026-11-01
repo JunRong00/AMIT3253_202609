@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param('ii', $id, $id);
         $stmt->execute();
         if ($stmt->affected_rows === 0) {
-            $_SESSION['flash_error'] = 'Cannot delete a session that students have already checked in to.';
+            $_SESSION['flash_error'] = 'Cannot delete a class that students have already checked in to.';
         }
         $stmt->close();
     }

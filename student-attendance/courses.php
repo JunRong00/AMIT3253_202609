@@ -78,9 +78,9 @@ require 'partials/header.php';
 <span class="badge badge-accent"><?= htmlspecialchars($c['code']) ?></span>
 <h3><?= htmlspecialchars($c['name']) ?></h3>
 <p><?= htmlspecialchars($c['lecturer_name'] ?? 'Lecturer to be assigned') ?></p>
-<p><?= (int)$c['enrolled'] ?> enrolled &middot; <?= (int)$c['session_count'] ?> session<?= (int)$c['session_count'] === 1 ? '' : 's' ?> this semester</p>
+<p><?= (int)$c['enrolled'] ?> enrolled &middot; <?= (int)$c['session_count'] ?> class<?= (int)$c['session_count'] === 1 ? '' : 'es' ?> this semester</p>
 <?php if ($isLecturer): ?>
-<a class="btn" href="sessions.php?semester_id=<?= $semesterId ?>&amp;course_id=<?= (int)$c['id'] ?>">Manage Sessions</a>
+<a class="btn" href="sessions.php?semester_id=<?= $semesterId ?>&amp;course_id=<?= (int)$c['id'] ?>">Manage Classes</a>
 <?php elseif (!$isAdmin && $isCurrentSemester): ?>
 <a class="btn" href="checkin.php">Check In</a>
 <?php endif; ?>

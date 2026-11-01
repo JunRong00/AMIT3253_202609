@@ -3,7 +3,7 @@
 <div class="footer-grid">
 <div class="footer-brand">
 <div class="footer-brand-name">Student Attendance System</div>
-<p>Check in to class with a session code in seconds, and keep track of your attendance.</p>
+<p>Check in to class with a check-in code in seconds, and keep track of your attendance.</p>
 </div>
 <?php if (current_user_id()): ?>
 <div class="footer-links">

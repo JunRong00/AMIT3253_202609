@@ -34,13 +34,13 @@ require 'partials/header.php';
 ?>
 <div class="page-header">
 <h1>Class Schedule</h1>
-<p>Upcoming class sessions for <?= htmlspecialchars($scope) ?>.</p>
+<p>Upcoming classes for <?= htmlspecialchars($scope) ?>.</p>
 </div>
 
 <?php if (empty($sessions)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128197;</div>
-<p>No upcoming sessions scheduled.</p>
+<p>No upcoming classes scheduled.</p>
 </div>
 <?php else: ?>
 <table>

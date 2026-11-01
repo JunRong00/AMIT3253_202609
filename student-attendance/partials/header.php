@@ -18,7 +18,7 @@ function nav_active($page, $current) {
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="<?= htmlspecialchars($pageDescription ?? 'Check in to your classes with a session code and track your attendance.') ?>">
+<meta name="description" content="<?= htmlspecialchars($pageDescription ?? 'Check in to your classes with a check-in code and track your attendance.') ?>">
 <title><?= htmlspecialchars($pageTitle ?? 'Student Attendance System') ?></title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="stylesheet" href="style.css?v=<?= @filemtime(__DIR__ . '/../style.css') ?>">
@@ -43,7 +43,7 @@ function nav_active($page, $current) {
 </button>
 <div class="user-menu-dropdown">
 <?php if (current_user_is_lecturer()): ?>
-<a href="sessions.php">My Sessions</a>
+<a href="sessions.php">My Classes</a>
 <?php else: ?>
 <a href="my_attendance.php">My Attendance</a>
 <?php endif; ?>

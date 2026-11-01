@@ -10,7 +10,7 @@ $error = '';
 
 $session = lecturer_session($conn, $uid, $id);
 if (!$session) {
-    die('Session not found or you do not teach this course.');
+    die('Class not found or you do not teach this course.');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -39,11 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $session = array_merge($session, compact('session_date', 'start_time', 'end_time', 'venue', 'class_type'));
 }
 
-$pageTitle = 'Edit Session';
+$pageTitle = 'Edit Class';
 require 'partials/header.php';
 ?>
 <div class="form-card">
-<h1>Edit Session</h1>
+<h1>Edit Class</h1>
 <?php if ($error): ?><p class="alert alert-error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 <form method="post">
 <input type="hidden" name="id" value="<?= (int)$session['id'] ?>">
@@ -59,8 +59,8 @@ require 'partials/header.php';
 <label>Start Time <span class="required-mark">*</span> <input type="time" name="start_time" value="<?= htmlspecialchars(substr($session['start_time'], 0, 5)) ?>" required></label>
 <label>End Time <span class="required-mark">*</span> <input type="time" name="end_time" value="<?= htmlspecialchars(substr($session['end_time'], 0, 5)) ?>" required></label>
 <label>Venue <span class="required-mark">*</span> <input type="text" name="venue" value="<?= htmlspecialchars($session['venue']) ?>" required></label>
-<button type="submit">Update Session</button>
+<button type="submit">Update Class</button>
 </form>
-<p><a class="btn btn-secondary btn-small" href="session_view.php?id=<?= (int)$session['id'] ?>">Back to session</a></p>
+<p><a class="btn btn-secondary btn-small" href="session_view.php?id=<?= (int)$session['id'] ?>">Back to class</a></p>
 </div>
 <?php require 'partials/footer.php'; ?>

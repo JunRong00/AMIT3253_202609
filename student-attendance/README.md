@@ -5,48 +5,52 @@ A PHP + MySQL web app for the **AMIT3253 Cloud Computing for Business** capstone
 the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
 ![Student homepage](screenshots/homepage.jpg)
-*Student homepage — check in with the session code and see today's classes.*
+*Student homepage — check in with the check-in code and see today's classes.*
 
-![Lecturer's session page](screenshots/lecturer-session.jpg)
-*Lecturer's session page — the check-in code to project in class and a live list of who has checked in.*
+![Lecturer's class page](screenshots/lecturer-session.jpg)
+*Lecturer's class page — the check-in code to project in class and a live list of who has checked in.*
 
 ![My Attendance](screenshots/my-attendance.jpg)
-*My Attendance — every session so far in the chosen semester, marked Present, Late or Absent.*
+*My Attendance — every class so far in the chosen semester, marked Present, Late or Absent.*
 
 ## Features
 
+> **Naming:** on screen, one meeting of a course (a specific date, time and venue) is called a
+> **class**. In the code it's a row in the `class_sessions` table, and its pages are `sessions.php`
+> and `session_*.php`. This is unrelated to the PHP login sessions stored in the `sessions` table.
+
 **Semesters**
 - A year has two **long semesters (14 weeks)** and one **short semester (7 weeks)**, set up by the
-  admin. Students are enrolled per semester, and every class session falls within a semester.
+  admin. Students are enrolled per semester, and every class falls within a semester.
 
 **Students**
 - See the courses they're enrolled in for a chosen semester on **My Courses**. Enrolment is done
   by the admin, not by students themselves.
 - **Check in** by entering the six-character code shown in class (homepage or `checkin.php`).
-  Check-in only works while the session is open for check-in, on the day of the session, for
+  Check-in only works while the class is open for check-in, on the day of the class, for
   courses the student is enrolled in. Checking in more than 15 minutes after the start time is
   recorded as **Late**.
 - **Check-in closes automatically when the class ends** (`class_sessions.open_until`), so a code
   shared after class is useless. Only the lecturer can reopen it.
-- **Concurrency-safe and idempotent**: the session row is locked (`SELECT ... FOR UPDATE`)
-  while checking it's still open, and a unique key on (session, student) means a double
+- **Concurrency-safe and idempotent**: the class's row is locked (`SELECT ... FOR UPDATE`)
+  while checking it's still open, and a unique key on (class, student) means a double
   submit can never create two records — the second attempt just reports "already checked in".
 - "Today's Classes" and "Recent Check-Ins" on the homepage; **`my_attendance.php`** lists every
-  session so far in a chosen semester with Present / Late / Absent.
-- **`schedule.php`**: upcoming sessions for your enrolled courses.
+  class so far in a chosen semester with Present / Late / Absent.
+- **`schedule.php`**: upcoming classes for your enrolled courses.
 - Login/logout, account page (Student ID is set by the admin and can't be changed by the user), dark/light mode, password visibility toggle, TAR UMT
   faculty dropdown. Contact form and feedback page, moderated by admin.
 
 **Lecturers** (accounts created by an admin, `users.role = 'lecturer'`)
-- "Today's Sessions" and "My Courses" on the homepage; **`sessions.php`** lists every session
+- "Today's Classes" and "My Courses" on the homepage; **`sessions.php`** lists every class
   for the courses they teach, filtered by semester and course. **My Courses** shows only the
   courses they teach.
-- The admin sets up each semester's regular classes; lecturers add **extra or one-off sessions**
+- The admin sets up each semester's regular classes; lecturers add **extra or one-off classes**
   for their own courses (date, start/end time, venue, class type, optionally repeated weekly), and
-  edit or delete their sessions. A session students have already checked in to can't be deleted.
-- **Open check-in** on the day of the session: a fresh six-character code is generated each
+  edit or delete their classes. A class students have already checked in to can't be deleted.
+- **Open check-in** on the day of the class: a fresh six-character code is generated each
   time (no look-alike characters such as 0/O or 1/I), shown large for projecting. It stays open
-  until the session's end time and then closes by itself; the lecturer can also close it early.
+  until the class's end time and then closes by itself; the lecturer can also close it early.
 - **Reopen after class**: once a class has ended, the lecturer can reopen check-in for 15
   minutes (`REOPEN_MINUTES` in `helpers.php`) with a fresh code, e.g. for a student who had
   trouble checking in.
@@ -61,9 +65,9 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   semester).
 - **Enrol students in courses per semester** (`admin/enrolments.php`): pick a semester and course,
   select several students at once, and remove them again if needed (past attendance records are
-  kept). Only students enrolled for that semester can check in to a course's sessions.
-- View every session across all courses (filtered by semester), the full attendance roster for any session, and
-  remove an individual check-in (e.g. to correct a mistake). Delete a session together with its
+  kept). Only students enrolled for that semester can check in to a course's classes.
+- View every class across all courses (filtered by semester), the full attendance roster for any class, and
+  remove an individual check-in (e.g. to correct a mistake). Delete a class together with its
   attendance records.
 - Full CRUD for courses (with lecturer assignment and photo upload).
 - Moderate feedback and view contact messages.
@@ -101,11 +105,11 @@ app. You are welcome to come up with your own instead.
 
 | Idea | Effort | What it involves |
 |---|---|---|
-| **Attendance percentage** | Easy | On `my_attendance.php`, show each course's attendance % (Present + Late ÷ sessions so far) and highlight courses below 80%. Reads `attendance`, `class_sessions`, `enrolments`. |
+| **Attendance percentage** | Easy | On `my_attendance.php`, show each course's attendance % (Present + Late ÷ classes so far) and highlight courses below 80%. Reads `attendance`, `class_sessions`, `enrolments`. |
 | **Lecturer attendance report** | Easy | A page for lecturers listing every enrolled student's attendance % for one course, with a low-attendance warning list. |
 | **Manual mark by lecturer** | Easy | Let a lecturer mark a student Present/Late from `session_view.php` (e.g. a student whose phone died). Insert into `attendance`, checking the student is enrolled. |
 | **Photo proof on check-in** | Moderate | Add a photo field to the check-in form (`<input type="file" accept="image/*" capture="user">` opens the phone camera or the photo library). Reuse `handle_image_upload()` to store it — on S3, so every instance behind the load balancer can show it — add a `photo_url` column to `attendance`, and show the photo on the lecturer's live roster. Bonus: keep the bucket private and show photos through time-limited (pre-signed) links. |
-| **Absence with valid reason (MC)** | Moderate | Students submit a reason (and optionally a medical certificate photo, uploaded with the existing `handle_image_upload()` helper) for an Absent session; the lecturer approves it and it shows as **Excused**. New `absence_requests` table. |
+| **Absence with valid reason (MC)** | Moderate | Students submit a reason (and optionally a medical certificate photo, uploaded with the existing `handle_image_upload()` helper) for an Absent class; the lecturer approves it and it shows as **Excused**. New `absence_requests` table. |
 | **Edit user** | Easy | An `admin/user_edit.php` page so an admin can correct a student's name, Student ID or faculty without deleting the account. |
 | **Bulk-create students from CSV** | Moderate | Upload a CSV (name, email, Student ID, faculty, course codes) to create many student accounts and enrolments at once. |
 
@@ -141,7 +145,7 @@ statements and all output is escaped with `htmlspecialchars()`.
    ```
 4. Visit `http://localhost:8000/` and log in with one of the demo accounts above.
 
-Sample data with dates (sessions, deadlines, replacement classes) is relative to the day you
+Sample data with dates (classes, deadlines, replacement classes) is relative to the day you
 import `schema.sql`, so the demo always has current data. Re-import it to reset.
 
 ## Project structure
@@ -153,11 +157,11 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 | `healthz.php` | ALB health check target — `200` if the DB connection works, `500` otherwise |
 | `auth.php` | Database-backed PHP sessions + helpers: `current_user_id()`, `require_login()`, `require_admin()`, `require_lecturer()` |
 | `helpers.php` | Image upload/delete (local or S3), faculty list, and this app's own helpers |
-| `index.php` | Homepage: check-in box + today's classes (students) or today's sessions (lecturers) |
-| `checkin.php` | Enter a session code to check in |
+| `index.php` | Homepage: check-in box + today's classes (students) or today's classes (lecturers) |
+| `checkin.php` | Enter a check-in code to check in |
 | `courses.php` | Course list, with the student's enrolled courses marked |
-| `schedule.php`, `my_attendance.php` | Upcoming sessions; personal attendance history |
-| `sessions.php`, `session_*.php` | Lecturer session management, check-in toggle and live roster |
+| `schedule.php`, `my_attendance.php` | Upcoming classes; personal attendance history |
+| `sessions.php`, `session_*.php` | Lecturer class management, check-in toggle and live roster |
 | `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
 | `about.php`, `contact.php`, `feedback.php` | Informational pages, contact form, feedback |
 | `partials/` | Shared navbar/footer, included by every page |

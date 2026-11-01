@@ -82,7 +82,7 @@ $pageTitle = 'Enrolments';
 require 'partials/header.php';
 ?>
 <h1>Enrolments</h1>
-<p>Enrol students in courses for each semester. Students can only check in to sessions of courses they're enrolled in for that semester.</p>
+<p>Enrol students in courses for each semester. Students can only check in to classes of courses they're enrolled in for that semester.</p>
 
 <form method="get" class="filter-bar">
 <label>Semester

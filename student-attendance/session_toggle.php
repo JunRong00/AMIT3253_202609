@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $stmt->close();
     } elseif ($session && $session['session_date'] !== date('Y-m-d')) {
-        $_SESSION['flash_error'] = 'Check-in can only be opened on the day of the session.';
+        $_SESSION['flash_error'] = 'Check-in can only be opened on the day of the class.';
     } elseif ($session) {
         // Open until the class ends. If the class has already ended, this is
         // a reopen for latecomers, so allow a short REOPEN_MINUTES window.

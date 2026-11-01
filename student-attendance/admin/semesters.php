@@ -61,7 +61,7 @@ $pageTitle = 'Semesters';
 require 'partials/header.php';
 ?>
 <h1>Semesters</h1>
-<p>Each year has two long semesters (14 weeks) and one short semester (7 weeks). Students are enrolled per semester, and class sessions must fall within a semester.</p>
+<p>Each year has two long semesters (14 weeks) and one short semester (7 weeks). Students are enrolled per semester, and classes must fall within a semester.</p>
 <?php if ($error): ?><p class="alert alert-error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 <?php if ($success): ?><p class="alert alert-success"><?= htmlspecialchars($success) ?></p><?php endif; ?>
 
@@ -85,7 +85,7 @@ require 'partials/header.php';
 </div>
 <?php else: ?>
 <table>
-<tr><th>Code</th><th>Type</th><th>Starts</th><th>Ends</th><th>Weeks</th><th>Sessions</th><th>Enrolments</th><th>Actions</th></tr>
+<tr><th>Code</th><th>Type</th><th>Starts</th><th>Ends</th><th>Weeks</th><th>Classes</th><th>Enrolments</th><th>Actions</th></tr>
 <?php foreach ($semesters as $s): ?>
 <?php $isCurrent = date('Y-m-d') >= $s['start_date'] && date('Y-m-d') <= semester_end_date($s); ?>
 <tr>

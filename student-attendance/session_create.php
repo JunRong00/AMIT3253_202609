@@ -30,11 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($session_date === '' || $start_time === '' || $end_time === '' || $venue === '') {
         $error = 'All fields are required.';
     } elseif (!lecturer_owns_course($conn, $uid, $course_id)) {
-        $error = 'You can only schedule sessions for courses you teach.';
+        $error = 'You can only schedule classes for courses you teach.';
     } elseif (!in_array($class_type, class_types(), true)) {
         $error = 'Please choose a valid class type.';
     } elseif ($session_date < date('Y-m-d')) {
-        $error = 'Session date cannot be in the past.';
+        $error = 'Class date cannot be in the past.';
     } elseif ($end_time <= $start_time) {
         $error = 'End time must be after the start time.';
     } elseif (!$semester) {
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($created === 1) {
             header('Location: session_view.php?id=' . $newId);
         } else {
-            $_SESSION['flash_success'] = "Scheduled $created weekly sessions" . ($created < $weeks ? ' (stopped at the end of ' . semester_label($semester) . ')' : '') . '.';
+            $_SESSION['flash_success'] = "Scheduled $created weekly classes" . ($created < $weeks ? ' (stopped at the end of ' . semester_label($semester) . ')' : '') . '.';
             header('Location: sessions.php?semester_id=' . (int)$semester['id'] . '&course_id=' . $course_id);
         }
         exit;
@@ -75,11 +75,11 @@ $stmt->execute();
 $myCourses = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-$pageTitle = 'Schedule Session';
+$pageTitle = 'Schedule Class';
 require 'partials/header.php';
 ?>
 <div class="form-card">
-<h1>Schedule a Session</h1>
+<h1>Schedule a Class</h1>
 <?php if ($error): ?><p class="alert alert-error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 <?php if (empty($myCourses)): ?>
 <p class="alert alert-error">No courses have been assigned to you yet. Ask an admin to assign you as a course lecturer.</p>
@@ -111,10 +111,10 @@ require 'partials/header.php';
 <?php endfor; ?>
 </select>
 </label>
-<p class="form-hint">Repeats on the same weekday and time, stopping at the end of the semester. Each session can still be edited or deleted on its own.</p>
-<button type="submit">Schedule Session</button>
+<p class="form-hint">Repeats on the same weekday and time, stopping at the end of the semester. Each class can still be edited or deleted on its own.</p>
+<button type="submit">Schedule Class</button>
 </form>
 <?php endif; ?>
-<p><a class="btn btn-secondary btn-small" href="sessions.php">Back to my sessions</a></p>
+<p><a class="btn btn-secondary btn-small" href="sessions.php">Back to my classes</a></p>
 </div>
 <?php require 'partials/footer.php'; ?>

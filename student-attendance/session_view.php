@@ -7,7 +7,7 @@ require_lecturer();
 $id = (int)($_GET['id'] ?? 0);
 $session = lecturer_session($conn, current_user_id(), $id);
 if (!$session) {
-    die('Session not found or you do not teach this course.');
+    die('Class not found or you do not teach this course.');
 }
 
 $flashError = $_SESSION['flash_error'] ?? null;
@@ -39,7 +39,7 @@ $stmt->close();
 
 $isToday = $session['session_date'] === date('Y-m-d');
 
-$pageTitle = 'Session - ' . $session['code'];
+$pageTitle = 'Class - ' . $session['code'];
 require 'partials/header.php';
 ?>
 <div class="page-header">
@@ -48,7 +48,7 @@ require 'partials/header.php';
 <h1><?= htmlspecialchars($session['code']) ?> <?= htmlspecialchars($session['course_name']) ?></h1>
 <p><?= htmlspecialchars($session['class_type']) ?> &middot; <?= htmlspecialchars(date('D, d M Y', strtotime($session['session_date']))) ?> &middot; <?= htmlspecialchars(format_time_range($session['start_time'], $session['end_time'])) ?> &middot; <?= htmlspecialchars($session['venue']) ?></p>
 </div>
-<a class="btn btn-secondary" href="session_edit.php?id=<?= (int)$session['id'] ?>">Edit Session</a>
+<a class="btn btn-secondary" href="session_edit.php?id=<?= (int)$session['id'] ?>">Edit Class</a>
 </div>
 </div>
 <?php if ($flashError): ?><p class="alert alert-error"><?= htmlspecialchars($flashError) ?></p><?php endif; ?>
@@ -83,7 +83,7 @@ e.g. for a student who had trouble checking in.</p>
 <button type="submit">Reopen for <?= REOPEN_MINUTES ?> Minutes</button>
 </form>
 <?php else: ?>
-<p>Check-in can be opened on the day of the session.</p>
+<p>Check-in can be opened on the day of the class.</p>
 <?php endif; ?>
 <?php endif; ?>
 </div>
@@ -172,5 +172,5 @@ e.g. for a student who had trouble checking in.</p>
     setInterval(refresh, 5000);
 })();
 </script>
-<p><a class="btn btn-secondary btn-small" href="sessions.php">Back to my sessions</a></p>
+<p><a class="btn btn-secondary btn-small" href="sessions.php">Back to my classes</a></p>
 <?php require 'partials/footer.php'; ?>

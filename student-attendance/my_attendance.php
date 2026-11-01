@@ -44,7 +44,7 @@ require 'partials/header.php';
 ?>
 <div class="page-header">
 <h1>My Attendance</h1>
-<p>Every class session so far for the courses you are enrolled in, by semester.</p>
+<p>Every class so far for the courses you are enrolled in, by semester.</p>
 </div>
 
 <?php if ($semester): ?>
@@ -63,7 +63,7 @@ require 'partials/header.php';
 <?php if (empty($rows)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128203;</div>
-<p>No class sessions yet for your enrolled courses. If you're missing a course, contact the Academic Administration Office.</p>
+<p>No classes yet for your enrolled courses. If you're missing a course, contact the Academic Administration Office.</p>
 </div>
 <?php else: ?>
 <table>

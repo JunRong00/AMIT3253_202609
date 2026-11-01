@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             delete_image_file($course['image_url'], $uploadDir);
         }
     } else {
-        $_SESSION['flash_error'] = 'Cannot delete this course: it still has sessions or enrolments referencing it.';
+        $_SESSION['flash_error'] = 'Cannot delete this course: it still has classes or enrolments referencing it.';
     }
     $stmt->close();
 }

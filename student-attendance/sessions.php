@@ -40,17 +40,17 @@ $stmt->execute();
 $myCourses = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-$pageTitle = 'My Sessions';
+$pageTitle = 'My Classes';
 require 'partials/header.php';
 ?>
 <div class="page-header">
 <div class="page-header-top">
 <div>
-<h1>My Sessions</h1>
+<h1>My Classes</h1>
 <p>Every class session for the courses you teach. The Academic Administration Office sets up the regular weekly classes;
 you can add extra or one-off sessions, and open check-in from each session.</p>
 </div>
-<a class="btn" href="session_create.php<?= $courseId ? '?course_id=' . $courseId : '' ?>">+ Schedule Session</a>
+<a class="btn" href="session_create.php<?= $courseId ? '?course_id=' . $courseId : '' ?>">+ Schedule Class</a>
 </div>
 </div>
 <?php if ($flashError): ?><p class="alert alert-error"><?= htmlspecialchars($flashError) ?></p><?php endif; ?>
@@ -78,7 +78,7 @@ you can add extra or one-off sessions, and open check-in from each session.</p>
 <?php if (empty($sessions)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128197;</div>
-<p>No sessions scheduled for this semester yet.</p>
+<p>No classes scheduled for this semester yet.</p>
 </div>
 <?php else: ?>
 <table>
@@ -96,7 +96,7 @@ you can add extra or one-off sessions, and open check-in from each session.</p>
 <a class="btn btn-small" href="session_view.php?id=<?= (int)$s['id'] ?>">Manage</a>
 <a class="btn btn-secondary btn-small" href="session_edit.php?id=<?= (int)$s['id'] ?>">Edit</a>
 <?php if ((int)$s['checked_in'] === 0): ?>
-<form action="session_delete.php" method="post" style="display:inline" onsubmit="return confirm('Delete this session?');">
+<form action="session_delete.php" method="post" style="display:inline" onsubmit="return confirm('Delete this class?');">
 <input type="hidden" name="id" value="<?= (int)$s['id'] ?>">
 <button type="submit" class="btn-small btn-danger">Delete</button>
 </form>

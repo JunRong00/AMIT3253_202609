@@ -9,7 +9,7 @@ $error = '';
 $success = '';
 
 if (current_user_is_lecturer()) {
-    $error = 'Lecturers don\'t check in - open a session from My Sessions and share its code with your class.';
+    $error = 'Lecturers don\'t check in - open a class from My Classes and share its code with your class.';
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $code = strtoupper(trim($_POST['code'] ?? ''));
 
@@ -89,7 +89,7 @@ require 'partials/header.php';
 <?php if ($success): ?><p class="alert alert-success"><?= htmlspecialchars($success) ?></p><?php endif; ?>
 <?php if (!current_user_is_lecturer()): ?>
 <form method="post">
-<label>Session Code <span class="required-mark">*</span>
+<label>Check-In Code <span class="required-mark">*</span>
 <input type="text" name="code" maxlength="6" placeholder="e.g. DEMO42" autocomplete="off" autofocus class="code-input" required>
 </label>
 <button type="submit">Check In</button>

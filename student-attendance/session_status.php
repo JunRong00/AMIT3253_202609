@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 $id = (int)($_GET['id'] ?? 0);
 if (!lecturer_session($conn, current_user_id(), $id)) {
     http_response_code(404);
-    echo json_encode(['error' => 'Session not found.']);
+    echo json_encode(['error' => 'Class not found.']);
     exit;
 }
 

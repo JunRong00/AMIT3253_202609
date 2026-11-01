@@ -75,7 +75,7 @@ require 'partials/header.php';
 ?>
 <section class="hero">
 <h1>Student Attendance System</h1>
-<p>Check in to class with a six-character session code &mdash; no more passing a paper list around.</p>
+<p>Check in to class with a six-character check-in code &mdash; no more passing a paper list around.</p>
 </section>
 
 <?php if (!$uid): ?>
@@ -97,12 +97,12 @@ require 'partials/header.php';
 
 <?php elseif ($isLecturer): ?>
 <section>
-<h2>Today's Sessions</h2>
+<h2>Today's Classes</h2>
 <?php if (empty($todaySessions)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128197;</div>
-<p>You have no class sessions today.</p>
-<a class="btn btn-small" href="session_create.php">+ Schedule a Session</a>
+<p>You have no classes today.</p>
+<a class="btn btn-small" href="session_create.php">+ Schedule a Class</a>
 </div>
 <?php else: ?>
 <table>
@@ -137,11 +137,11 @@ require 'partials/header.php';
 <span class="badge badge-accent"><?= htmlspecialchars($c['code']) ?></span>
 <h3><?= htmlspecialchars($c['name']) ?></h3>
 <p><?= (int)$c['enrolled'] ?> student<?= (int)$c['enrolled'] === 1 ? '' : 's' ?> enrolled this semester</p>
-<a class="btn" href="session_create.php?course_id=<?= (int)$c['id'] ?>">+ Schedule Session</a>
+<a class="btn" href="session_create.php?course_id=<?= (int)$c['id'] ?>">+ Schedule Class</a>
 </div>
 <?php endforeach; ?>
 </div>
-<p><a class="btn btn-secondary btn-small" href="sessions.php">View all my sessions</a></p>
+<p><a class="btn btn-secondary btn-small" href="sessions.php">View all my classes</a></p>
 <?php endif; ?>
 </section>
 
@@ -150,7 +150,7 @@ require 'partials/header.php';
 <h2>Check In</h2>
 <div class="form-card" style="max-width:560px; margin:0 0 24px;">
 <form method="post" action="checkin.php">
-<label>Session Code <span class="required-mark">*</span>
+<label>Check-In Code <span class="required-mark">*</span>
 <input type="text" name="code" maxlength="6" placeholder="e.g. DEMO42" autocomplete="off" class="code-input" required>
 </label>
 <button type="submit">Check In</button>

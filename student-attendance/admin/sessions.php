@@ -34,13 +34,13 @@ $stmt->close();
 
 $courses = $conn->query('SELECT id, code, name FROM courses ORDER BY code')->fetch_all(MYSQLI_ASSOC);
 
-$pageTitle = 'All Sessions';
+$pageTitle = 'All Classes';
 require 'partials/header.php';
 ?>
-<h1>All Sessions</h1>
-<p>Every class session across all courses. Set up each semester's regular classes here with <strong>Repeat weekly</strong>;
+<h1>All Classes</h1>
+<p>Every class across all courses. Set up each semester's regular classes here with <strong>Repeat weekly</strong>;
 lecturers add one-off sessions for their own courses and open check-in from the public site.</p>
-<p><a class="btn btn-small" href="session_create.php<?= $courseId ? '?course_id=' . $courseId : '' ?>">+ Schedule Session</a></p>
+<p><a class="btn btn-small" href="session_create.php<?= $courseId ? '?course_id=' . $courseId : '' ?>">+ Schedule Class</a></p>
 <?php if ($flashSuccess): ?><p class="alert alert-success"><?= htmlspecialchars($flashSuccess) ?></p><?php endif; ?>
 
 <form method="get" class="filter-bar">
@@ -65,7 +65,7 @@ lecturers add one-off sessions for their own courses and open check-in from the 
 <?php if (empty($sessions)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128197;</div>
-<p>No sessions scheduled yet.</p>
+<p>No classes scheduled yet.</p>
 </div>
 <?php else: ?>
 <table>
@@ -81,7 +81,7 @@ lecturers add one-off sessions for their own courses and open check-in from the 
 <td><?= session_is_open($s) ? '<span class="badge badge-success">Open</span> <code>' . htmlspecialchars($s['check_in_code']) . '</code>' : '<span class="badge badge-neutral">Closed</span>' ?></td>
 <td>
 <a class="btn btn-secondary btn-small" href="session_view.php?id=<?= (int)$s['id'] ?>">Attendance</a>
-<form action="session_delete.php" method="post" style="display:inline" onsubmit="return confirm('Delete this session AND all <?= (int)$s['checked_in'] ?> attendance record(s) for it? This cannot be undone.');">
+<form action="session_delete.php" method="post" style="display:inline" onsubmit="return confirm('Delete this class AND all <?= (int)$s['checked_in'] ?> attendance record(s) for it? This cannot be undone.');">
 <input type="hidden" name="id" value="<?= (int)$s['id'] ?>">
 <button type="submit" class="btn-small btn-danger">Delete</button>
 </form>
