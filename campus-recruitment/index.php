@@ -40,7 +40,7 @@ $stmt->close();
 $myApplications = [];
 if ($uid = current_user_id()) {
     $stmt = $conn->prepare('
-        SELECT a.id, a.status, a.created_at, o.title, o.organisation, o.category, o.deadline
+        SELECT a.id, a.status, a.admin_note, a.created_at, o.title, o.organisation, o.category, o.deadline
         FROM applications a
         JOIN openings o ON o.id = a.opening_id
         WHERE a.user_id = ?
@@ -139,7 +139,8 @@ closes <?= htmlspecialchars(date('d M Y', strtotime($o['deadline']))) ?>
 <td><?= htmlspecialchars($a['category']) ?></td>
 <td><?= htmlspecialchars(date('d M Y', strtotime($a['created_at']))) ?></td>
 <td><?= htmlspecialchars(date('d M Y', strtotime($a['deadline']))) ?></td>
-<td><span class="badge <?= status_badge_class($a['status']) ?>"><?= htmlspecialchars($a['status']) ?></span></td>
+<td><span class="badge <?= status_badge_class($a['status']) ?>"><?= htmlspecialchars($a['status']) ?></span>
+<?php if ($a['admin_note']): ?><br><span class="stat-label"><?= htmlspecialchars($a['admin_note']) ?></span><?php endif; ?></td>
 <td>
 <?php if ($a['status'] === 'Submitted' && !is_deadline_passed($a['deadline'])): ?>
 <a class="btn btn-secondary btn-small" href="edit.php?id=<?= (int)$a['id'] ?>">Edit</a>

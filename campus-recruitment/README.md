@@ -18,7 +18,7 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   (`SELECT ... FOR UPDATE`) while the deadline, vacancy and duplicate checks run, backed by a
   unique key on (user, opening). The opening dropdown greys out openings you've already applied
   for or that are filled (a fetch to **`opening_availability.php`**).
-- "My Applications" on the homepage with status; edit while Submitted and before the deadline,
+- "My Applications" on the homepage with status and the Careers Centre's note (e.g. interview details); edit while Submitted and before the deadline,
   withdraw while Submitted or Shortlisted.
 - Register/login/logout, account page, dark/light mode, password visibility toggle, TAR UMT
   faculty dropdown at registration.
@@ -26,7 +26,8 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
 
 **Admin panel** (`admin/`, gated by `is_admin`; admins land on `admin/applications.php`)
 - Review applications filtered by opening and status, and move them through Submitted →
-  Shortlisted → Accepted / Rejected. **Accepting is capped at the opening's vacancy count**,
+  Shortlisted → Accepted / Rejected, with a note shown to the applicant (e.g. interview time
+  and venue). **Accepting is capped at the opening's vacancy count**,
   checked under a row lock so two admins can't over-accept at the same moment.
 - Full CRUD for openings (with photo upload). Vacancies can't be lowered below the number
   already accepted.
@@ -62,7 +63,7 @@ app. You are welcome to come up with your own instead.
 | **Save / bookmark openings** | Easy | A ★ Save button on each opening and a "Saved Openings" list. New `saved_openings` table. |
 | **Closing soon** | Easy | A "Closing within 3 days" section on the homepage for openings you haven't applied to yet. |
 | **Interview scheduling** | Moderate | When an application is Shortlisted, the admin sets an interview date/time/venue that the applicant sees on their homepage. |
-| **Application notes from admin** | Easy | Add an `admin_note` to applications (like the other apps' status notes) shown to the applicant. |
+| **Organisation accounts** | Moderate | Let clubs and companies log in with their own accounts (a new role) and review only their own openings' applicants, instead of the Careers Centre doing everything. |
 | **Admin dashboard** | Easy | An `admin/index.php` with applications per category and per status, and the most popular openings. |
 
 Document any function you add in your report: what it does, before/after screenshots, and the

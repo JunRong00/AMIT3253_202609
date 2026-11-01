@@ -7,6 +7,8 @@ require_admin();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id     = (int)$_POST['id'];
     $status = $_POST['status'] ?? '';
+    $note   = trim($_POST['admin_note'] ?? '');
+    $note   = $note === '' ? null : $note;
 
     if (in_array($status, application_statuses(), true)) {
         $conn->begin_transaction();
@@ -42,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($application) {
-            $stmt = $conn->prepare('UPDATE applications SET status = ? WHERE id = ?');
-            $stmt->bind_param('si', $status, $id);
+            $stmt = $conn->prepare('UPDATE applications SET status = ?, admin_note = ? WHERE id = ?');
+            $stmt->bind_param('ssi', $status, $note, $id);
             $stmt->execute();
             $stmt->close();
         }

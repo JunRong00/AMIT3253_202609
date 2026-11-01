@@ -47,7 +47,7 @@ $pageTitle = 'Applications';
 require 'partials/header.php';
 ?>
 <h1>Applications</h1>
-<p>Review applications and move them through Submitted &rarr; Shortlisted &rarr; Accepted / Rejected. An opening can't accept more applicants than it has vacancies.</p>
+<p>Review applications and move them through Submitted &rarr; Shortlisted &rarr; Accepted / Rejected. The note (e.g. interview details) is shown to the applicant. An opening can't accept more applicants than it has vacancies.</p>
 <?php if ($flashError): ?><p class="alert alert-error"><?= htmlspecialchars($flashError) ?></p><?php endif; ?>
 
 <form method="get" class="filter-bar">
@@ -77,7 +77,7 @@ require 'partials/header.php';
 </div>
 <?php else: ?>
 <table>
-<tr><th>Applied</th><th>Opening</th><th>Applicant</th><th>Cover Note</th><th>Status</th><th>Actions</th></tr>
+<tr><th>Applied</th><th>Opening</th><th>Applicant</th><th>Cover Note</th><th>Status &amp; Note</th><th>Actions</th></tr>
 <?php foreach ($applications as $a): ?>
 <tr>
 <td><?= htmlspecialchars(date('d M Y', strtotime($a['created_at']))) ?></td>
@@ -94,6 +94,7 @@ require 'partials/header.php';
 <option value="<?= htmlspecialchars($s) ?>" <?= $a['status'] === $s ? 'selected' : '' ?>><?= htmlspecialchars($s) ?></option>
 <?php endforeach; ?>
 </select>
+<input type="text" name="admin_note" maxlength="500" placeholder="Note to applicant" value="<?= htmlspecialchars($a['admin_note'] ?? '') ?>">
 <button type="submit" class="btn-small">Save</button>
 </form>
 </td>

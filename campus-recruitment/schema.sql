@@ -51,6 +51,7 @@ CREATE TABLE applications (
   phone VARCHAR(20) NOT NULL,
   cover_note TEXT NOT NULL,
   status ENUM('Submitted', 'Shortlisted', 'Accepted', 'Rejected') NOT NULL DEFAULT 'Submitted',
+  admin_note VARCHAR(500) NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uniq_user_opening (user_id, opening_id),
@@ -58,9 +59,9 @@ CREATE TABLE applications (
   FOREIGN KEY (opening_id) REFERENCES openings(id)
 );
 
-INSERT INTO applications (user_id, opening_id, phone, cover_note, status) VALUES
-(2, 3, '012-345 6789', 'I have helped my faculty set up labs for two semesters and enjoy troubleshooting hardware.', 'Shortlisted'),
-(2, 5, '012-345 6789', 'I play guitar and helped organise last year''s jam sessions.', 'Submitted');
+INSERT INTO applications (user_id, opening_id, phone, cover_note, status, admin_note) VALUES
+(2, 3, '012-345 6789', 'I have helped my faculty set up labs for two semesters and enjoy troubleshooting hardware.', 'Shortlisted', 'Interview on Friday at 2:00 pm, Block K Room K204. Bring a copy of your resume.'),
+(2, 5, '012-345 6789', 'I play guitar and helped organise last year''s jam sessions.', 'Submitted', NULL);
 
 CREATE TABLE feedback (
   id INT AUTO_INCREMENT PRIMARY KEY,
