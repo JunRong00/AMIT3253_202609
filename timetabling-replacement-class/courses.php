@@ -38,7 +38,7 @@ require 'partials/header.php';
 ?>
 <div class="page-header">
 <h1>Courses</h1>
-<p>Every course, with its regular weekly classes for <?= $semester ? htmlspecialchars(semester_label($semester)) : 'the current semester' ?>.</p>
+<p>The full course catalogue, with each course's regular weekly classes for <?= $semester ? htmlspecialchars(semester_label($semester)) : 'the current semester' ?>. Your own timetable is on the <a href="timetable.php">Timetable</a> page.</p>
 </div>
 
 <section>
@@ -63,7 +63,6 @@ require 'partials/header.php';
 &middot; <?= htmlspecialchars($e['class_type']) ?> &middot; <?= htmlspecialchars($e['venue_name']) ?></p>
 <?php endforeach; ?>
 <?php endif; ?>
-<a class="btn" href="timetable.php?course_id=<?= (int)$c['id'] ?>">View Timetable</a>
 </div>
 </section>
 <?php endforeach; ?>

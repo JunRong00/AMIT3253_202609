@@ -7,23 +7,45 @@ $uid = current_user_id();
 $isLecturer = current_user_is_lecturer();
 $search = trim($_GET['q'] ?? '');
 
-$courseSql = '
+// Courses relevant to this user in the current semester: a student's
+// enrolled courses, a lecturer's own courses with classes this semester,
+// or (for admins) every course with classes this semester. The Courses page
+// is the full catalogue.
+$semester = default_semester($conn);
+$semesterId = (int)($semester['id'] ?? 0);
+
+$where = ['EXISTS (SELECT 1 FROM timetable_entries t WHERE t.course_id = c.id AND t.semester_id = ?)'];
+$types = 'ii';
+$params = [$semesterId, $semesterId];
+if ($isLecturer) {
+    $where[] = 'c.lecturer_id = ?';
+    $types .= 'i';
+    $params[] = $uid;
+} elseif (!current_user_is_admin()) {
+    $where = ['EXISTS (SELECT 1 FROM enrolments e WHERE e.course_id = c.id AND e.user_id = ? AND e.semester_id = ?)'];
+    $params = [$uid, $semesterId];
+    $types = 'iii';
+    array_unshift($params, $semesterId);
+}
+if ($search !== '') {
+    $where[] = '(c.code LIKE ? OR c.name LIKE ?)';
+    $likeSearch = '%' . $search . '%';
+    $types .= 'ss';
+    $params[] = $likeSearch;
+    $params[] = $likeSearch;
+}
+$stmt = $conn->prepare('
     SELECT c.*, u.name AS lecturer_name,
-           (SELECT COUNT(*) FROM timetable_entries t WHERE t.course_id = c.id
-            AND t.semester_id = (SELECT id FROM semesters WHERE CURDATE() BETWEEN start_date AND DATE_ADD(start_date, INTERVAL weeks * 7 - 1 DAY) LIMIT 1)) AS classes_per_week
+           (SELECT COUNT(*) FROM timetable_entries t WHERE t.course_id = c.id AND t.semester_id = ?) AS classes_per_week
     FROM courses c
     LEFT JOIN users u ON u.id = c.lecturer_id
-';
-if ($search !== '') {
-    $stmt = $conn->prepare($courseSql . ' WHERE c.code LIKE ? OR c.name LIKE ? ORDER BY c.code');
-    $likeSearch = '%' . $search . '%';
-    $stmt->bind_param('ss', $likeSearch, $likeSearch);
-    $stmt->execute();
-    $courses = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-} else {
-    $courses = $conn->query($courseSql . ' ORDER BY c.code')->fetch_all(MYSQLI_ASSOC);
-}
+    WHERE ' . implode(' AND ', $where) . '
+    ORDER BY c.code
+');
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$courses = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 $replacementSql = '
     SELECT r.*, c.code, c.name AS course_name, v.name AS venue_name, ts.start_time, ts.end_time
@@ -60,7 +82,7 @@ require 'partials/header.php';
 </section>
 
 <section>
-<h2>Courses</h2>
+<h2><?= current_user_is_admin() ? 'Courses This Semester' : 'My Courses' ?><?= $semester ? ' &middot; ' . htmlspecialchars(semester_label($semester)) : '' ?></h2>
 <form method="get" class="filter-bar" id="course-filter-form">
 <label>Search <input type="text" name="q" id="course-search" placeholder="Course code or name..." value="<?= htmlspecialchars($search) ?>" autocomplete="off"></label>
 <button type="submit">Search</button>
@@ -84,8 +106,16 @@ require 'partials/header.php';
 <?php if (empty($courses)): ?>
 <div class="empty-state">
 <div class="empty-state-icon">&#128269;</div>
+<?php if ($search !== ''): ?>
 <p>No courses match your search.</p>
 <a class="btn btn-small btn-secondary" href="index.php">Clear filters</a>
+<?php elseif ($isLecturer): ?>
+<p>You have no classes this semester. Ask the Academic Administration Office to assign you as a course lecturer.</p>
+<?php elseif (!current_user_is_admin()): ?>
+<p>You are not enrolled in any courses this semester. Contact the Academic Administration Office if this is wrong.</p>
+<?php else: ?>
+<p>No classes are timetabled for this semester yet.</p>
+<?php endif; ?>
 </div>
 <?php else: ?>
 <div class="card-grid">
@@ -95,7 +125,7 @@ require 'partials/header.php';
 <h3><?= htmlspecialchars($c['name']) ?></h3>
 <p><?= htmlspecialchars($c['lecturer_name'] ?? 'Lecturer to be assigned') ?></p>
 <p><?= (int)$c['classes_per_week'] ?> class<?= (int)$c['classes_per_week'] === 1 ? '' : 'es' ?> per week this semester</p>
-<a class="btn" href="timetable.php?course_id=<?= (int)$c['id'] ?>">View Timetable</a>
+<a class="btn" href="timetable.php?semester_id=<?= $semesterId ?>&amp;course_id=<?= (int)$c['id'] ?>">View Timetable</a>
 <?php if ($isLecturer && (int)$c['lecturer_id'] === (int)$uid): ?>
 <a class="btn btn-secondary" href="create.php?course_id=<?= (int)$c['id'] ?>">Request Replacement</a>
 <?php endif; ?>
