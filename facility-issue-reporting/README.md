@@ -30,9 +30,9 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   **`issue_availability.php`**).
 - "My Reports" on the homepage with status and the Estate Office's note; edit/withdraw while
   still Open (locked once work starts).
-- Login/logout, account page (the Student/Staff ID is set by the admin and can't be changed),
-  dark/light mode, password visibility toggle. **There is no public registration** — the admin
-  creates every account.
+- **Self-registration**: anyone on campus can register (name, email, Student/Staff ID, faculty)
+  and start reporting straight away — the goal is to make reporting as easy as possible. Plus
+  login/logout, account page, dark/light mode and password visibility toggle.
 - Contact form and feedback page (topic + star rating), both moderated by admin.
 
 **Admin panel** (`admin/`, gated by `is_admin`; admins land on `admin/issues.php`)
@@ -40,8 +40,8 @@ the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code fro
   reporter; filter by status; delete reports. Shows the reporter's name and email.
 - Full CRUD for locations (with photo upload).
 - Moderate feedback and view contact messages.
-- **Create every account** (`admin/user_create.php`): students/staff (with Student/Staff ID and
-  faculty) or admins. Duplicate emails and IDs are rejected.
+- **Create accounts** (`admin/user_create.php`): students/staff (with Student/Staff ID and faculty) or
+  admins, in addition to self-registration. Duplicate emails and IDs are rejected.
 - Manage user accounts: promote/demote admin access, delete an account (cascades to their
   reports and feedback). An admin can never delete or demote
   their own account.
@@ -58,7 +58,7 @@ Seeded by `schema.sql`:
 | `student@example.com` | `student123` | Student |
 
 **Change these passwords (or the seed rows in `schema.sql`) before deploying anywhere beyond a
-local demo** — they're well-known credentials once this code is shared. There is **no public registration**: an admin creates every student, staff and admin account from **Users → Add User**.
+local demo** — they're well-known credentials once this code is shared. Students and staff **register themselves**; an admin can also create student/staff or admin accounts from **Users → Add User**.
 
 ## Ideas for additional functions
 
@@ -124,7 +124,7 @@ import `schema.sql`, so the demo always has current data. Re-import it to reset.
 | `locations.php`, `board.php` | Locations with active issues; Issue Board of all reports |
 | `create.php` / `edit.php` / `delete.php` | Issue report CRUD (own reports only) |
 | `issue_availability.php` | JSON endpoint used to grey out already-reported categories |
-| `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
+| `register.php` / `login.php` / `logout.php` / `account.php` | Accounts (passwords hashed with `password_hash()`, never plaintext) |
 | `about.php`, `contact.php`, `feedback.php` | Informational pages, contact form, feedback |
 | `partials/` | Shared navbar/footer, included by every page |
 | `admin/` | Admin-only pages |
@@ -217,7 +217,7 @@ needs no cookie but only checks the database connection, so it isn't a realistic
 
 ## Login is required
 
-**Every page needs a login** except `login.php` (and
+**Every page needs a login** except `login.php` and `register.php` (and
 `healthz.php`, which the load balancer calls). This is enforced in one place: the
 `PUBLIC_PAGES` check at the bottom of `auth.php`, which every page loads, so a new page you add
 is protected automatically. Logged-out visitors are redirected to the login page, and the

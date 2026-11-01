@@ -18,18 +18,20 @@ $stmt->close();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'profile') {
     $name          = trim($_POST['name'] ?? '');
+    $id_number     = trim($_POST['id_number'] ?? '');
     $faculty       = trim($_POST['faculty'] ?? '');
     $date_of_birth = trim($_POST['date_of_birth'] ?? '');
 
-    if ($name === '' || $date_of_birth === '' || $faculty === '') {
+    if ($name === '' || $date_of_birth === '' || $id_number === '' || $faculty === '') {
         $profileError = 'All fields are required.';
     } else {
-        $stmt = $conn->prepare('UPDATE users SET name = ?, faculty = ?, date_of_birth = ? WHERE id = ?');
-        $stmt->bind_param('sssi', $name, $faculty, $date_of_birth, $uid);
+        $stmt = $conn->prepare('UPDATE users SET name = ?, id_number = ?, faculty = ?, date_of_birth = ? WHERE id = ?');
+        $stmt->bind_param('ssssi', $name, $id_number, $faculty, $date_of_birth, $uid);
         $stmt->execute();
         $stmt->close();
         $_SESSION['user_name'] = $name;
         $user['name'] = $name;
+        $user['id_number'] = $id_number;
         $user['faculty'] = $faculty;
         $user['date_of_birth'] = $date_of_birth;
         $profileSuccess = 'Profile updated.';
@@ -79,7 +81,7 @@ require 'partials/header.php';
 <input type="hidden" name="form" value="profile">
 <label>Full Name <span class="required-mark">*</span> <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" required></label>
 <label>Email <input type="email" value="<?= htmlspecialchars($user['email']) ?>" disabled></label>
-<label>Student ID / Staff ID <input type="text" value="<?= htmlspecialchars($user['id_number'] ?? '') ?>" disabled></label>
+<label>Student ID / Staff ID <span class="required-mark">*</span> <input type="text" name="id_number" value="<?= htmlspecialchars($user['id_number'] ?? '') ?>" required></label>
 <label>Faculty <span class="required-mark">*</span>
 <select name="faculty" required>
 <option value="">-- Select Faculty / Centre --</option>

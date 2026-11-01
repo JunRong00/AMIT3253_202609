@@ -40,6 +40,6 @@ require 'partials/header.php';
 </label>
 <button type="submit">Login</button>
 </form>
-<p>Don't have an account? Accounts are created by the Estate Management Office.</p>
+<p>Don't have an account? <a href="register.php">Register here</a></p>
 </div>
 <?php require 'partials/footer.php'; ?>

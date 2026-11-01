@@ -16,7 +16,7 @@ CREATE TABLE users (
 -- Seed accounts (change these passwords in any real deployment):
 --   admin@example.com   / admin123    (admin)
 --   student@example.com / student123  (student)
--- There is no public registration: an admin creates every account.
+-- Students and staff register themselves; admins can also create accounts.
 INSERT INTO users (name, email, password_hash, id_number, faculty, date_of_birth, is_admin) VALUES
 ('Admin', 'admin@example.com', '$2y$10$HI3gLmyD4OGmfNLAGUIL8.eBhhKu5nzL7wTDws.6mUNO9V44kyM5q', NULL, NULL, NULL, 1),
 ('Demo Student', 'student@example.com', '$2y$10$3kkHog6vhyue9Syxkx8ohe8Q6.wBphgtVxgwRB7cLPzLWBtjrC8Kq', '2409123', 'Faculty of Computing and Information Technology', '2005-03-14', 0);

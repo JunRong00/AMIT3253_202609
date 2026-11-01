@@ -63,7 +63,7 @@ require 'partials/header.php';
 ?>
 <div class="form-card">
 <h1>Add User</h1>
-<p>Student, staff and admin accounts are all created here &mdash; there is no public registration.
+<p>Create a student/staff or admin account directly (students and staff can also register themselves).
 Give the new user their email and password so they can log in, and ask them to change the
 password from My Account.</p>
 <?php if ($error): ?><p class="alert alert-error"><?= htmlspecialchars($error) ?></p><?php endif; ?>

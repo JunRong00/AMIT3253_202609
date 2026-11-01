@@ -14,7 +14,7 @@ $pageTitle = 'Manage Users';
 require 'partials/header.php';
 ?>
 <h1>Users</h1>
-<p>Every account is created here &mdash; students, staff and admins. There is no public registration.</p>
+<p>Students and staff register themselves; you can also create student/staff or admin accounts here.</p>
 <p><a class="btn btn-small" href="user_create.php">+ Add User</a></p>
 <?php if ($flashError): ?><p class="alert alert-error"><?= htmlspecialchars($flashError) ?></p><?php endif; ?>
 <?php if ($flashSuccess): ?><p class="alert alert-success"><?= htmlspecialchars($flashSuccess) ?></p><?php endif; ?>
